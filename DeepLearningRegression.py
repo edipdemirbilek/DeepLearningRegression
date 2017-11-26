@@ -10,6 +10,7 @@ Example:
     sections. Sections support any reStructuredText formatting, including
     literal blocks::
 
+        $ python DLRegressionMOSKFold.py
         $ python DLRegressionMOSKFold.py --model_type=random
         $ python DLRegressionMOSKFold.py --model_type=random --debug=True
         $ python DLRegressionMOSKFold.py --model_type=custom
