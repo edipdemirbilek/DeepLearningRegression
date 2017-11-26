@@ -67,6 +67,7 @@ RESULTS_SUMMARY_FILE_NAME = "Results_new.csv"
 K = 4
 NUM_FEATURES = 127
 
+
 def load_dataset():
     """Example function with PEP 484 type annotations.
 
@@ -84,7 +85,7 @@ def load_dataset():
 
     with open(DATASET_FILE_NAME) as file:
         for line in file:
-            #split on comma
+            # split on comma
             row = line.strip().split(",")
             if first_row:
                 first_row = False
@@ -93,22 +94,23 @@ def load_dataset():
 
     random.shuffle(attributes_tmp)
 
-    #Separate attributes and labels
+    # Separate attributes and labels
     attributes = []
     labels = []
     for row in attributes_tmp:
         labels.append(float(row.pop()))
         row_length = len(row)
-        #eliminate ID
+        # eliminate ID
         attributes_one_row = [float(row[i]) for i in range(0, row_length)]
         attributes.append(attributes_one_row)
 
-    #number of rows and columns in x matrix
+    # number of rows and columns in x matrix
     nrows = len(attributes)
     ncols = len(attributes[1])
     print("#Rows: " + str(nrows) + " #Cols: " + str(ncols))
 
     return attributes, labels
+
 
 def prepare_data(attributes, train, test, labels, n_features):
     """Example function with PEP 484 type annotations.
@@ -145,12 +147,12 @@ def prepare_data(attributes, train, test, labels, n_features):
     y_train = asarray(y_train)
     y_test = asarray(y_test)
 
-    #This is for 0 mean and 1 variance
+    #T his is for 0 mean and 1 variance
     x_mean, x_std = x_train.mean(axis=0), x_train.std(axis=0)
     x_train = (x_train - x_mean)/x_std
     x_test = (x_test - x_mean)/x_std
 
-    #This is for normalization
+    # This is for normalization
     y_train = y_train/5
     y_test = y_test/5
     ci_low = array(ci_low)/5
@@ -162,6 +164,7 @@ def prepare_data(attributes, train, test, labels, n_features):
     y_test = array(y_test)
 
     return x_train, y_train, x_test, y_test, ci_low, ci_high
+
 
 def initialize_layer_parameters(regularization):
     """Example function with PEP 484 type annotations.
@@ -202,6 +205,7 @@ def initialize_layer_parameters(regularization):
 
     return k_regularizer, a_regularizer, k_v, a_v
 
+
 def log_layer_parameters(layer, n_hidden, regularization, rate, k_v, a_v):
     """Example function with PEP 484 type annotations.
 
@@ -213,7 +217,8 @@ def log_layer_parameters(layer, n_hidden, regularization, rate, k_v, a_v):
         The return value. True for success, False otherwise.
 
     """
-    dropout, k_l2, k_l1, a_l2, a_l1 = unpack_regularization_object(regularization)
+    dropout, k_l2, k_l1, a_l2, a_l1 \
+        = unpack_regularization_object(regularization)
     with open(RESULTS_DETAILS_FILE_NAME, "a") as file:
         if dropout:
             file.write("\n    dropout: " + str(dropout))
@@ -223,27 +228,28 @@ def log_layer_parameters(layer, n_hidden, regularization, rate, k_v, a_v):
 
         file.write("\n    layer: " + str(layer))
         file.write("\n    n_hidden: " + str(n_hidden))
-        print("    layer: "+ str(layer))
-        print("    n_hidden: "+ str(n_hidden))
+        print("    layer: " + str(layer))
+        print("    n_hidden: " + str(n_hidden))
 
         if k_l2:
             file.write("\n    k_l2: " + str(k_l2))
-            print("    k_l2: "+ str(k_l2))
+            print("    k_l2: " + str(k_l2))
         if k_l1:
             file.write("\n    k_l1: " + str(k_l1))
-            print("    k_l1: "+ str(k_l1))
+            print("    k_l1: " + str(k_l1))
         if k_l2 or k_l1:
             file.write("\n    k_v: " + str(k_v))
-            print("    k_v: "+ str(k_v))
+            print("    k_v: " + str(k_v))
         if a_l2:
             file.write("\n    a_l2: " + str(a_l2))
-            print("    a_l2: "+ str(a_l2))
+            print("    a_l2: " + str(a_l2))
         if a_l1:
             file.write("\n    a_l1: " + str(a_l1))
-            print("    a_l1: "+ str(a_l1))
+            print("    a_l1: " + str(a_l1))
         if a_l2 or a_l1:
             file.write("\n    a_v: " + str(a_v))
-            print("    a_v: "+ str(a_v))
+            print("    a_v: " + str(a_v))
+
 
 def add_layers(dl_model, n_features, n_layers, regularization):
     """Example function with PEP 484 type annotations.
@@ -272,7 +278,8 @@ def add_layers(dl_model, n_features, n_layers, regularization):
     upper_limit = 1.0
 
     regularization = pack_regularization_object(False, k_l2, k_l1, a_l2, a_l1)
-    k_regularizer, a_regularizer, k_v, a_v = initialize_layer_parameters(regularization)
+    k_regularizer, a_regularizer, k_v, a_v \
+        = initialize_layer_parameters(regularization)
     n_hidden = sorted(n_nodes_per_hidden_layer, reverse=True)[0]
 
     dl_model.add(Dense(
@@ -300,8 +307,10 @@ def add_layers(dl_model, n_features, n_layers, regularization):
         a_l2 = orig_a_l2 & random.choice([True, False])
         a_l1 = orig_a_l1 & random.choice([True, False])
 
-        regularization = pack_regularization_object(dropout, k_l2, k_l1, a_l2, a_l1)
-        k_regularizer, a_regularizer, k_v, a_v = initialize_layer_parameters(regularization)
+        regularization = pack_regularization_object(
+            dropout, k_l2, k_l1, a_l2, a_l1)
+        k_regularizer, a_regularizer, k_v, a_v \
+            = initialize_layer_parameters(regularization)
 
         dl_model.add(Dense(
             n_hidden, activation='tanh',
@@ -310,6 +319,7 @@ def add_layers(dl_model, n_features, n_layers, regularization):
 
         log_layer_parameters(
             i+1, n_hidden, regularization, rate, k_v, a_v)
+
 
 def create_model(n_layers, n_features, regularization):
     """Example function with PEP 484 type annotations.
@@ -333,6 +343,7 @@ def create_model(n_layers, n_features, regularization):
 
     return dl_model
 
+
 def train_model(dl_model, x_train, y_train, n_batch_size, n_epoch, x_test, y_test):
     """Example function with PEP 484 type annotations.
 
@@ -349,7 +360,9 @@ def train_model(dl_model, x_train, y_train, n_batch_size, n_epoch, x_test, y_tes
         verbose=0, validation_data=(x_test, y_test))
     return history
 
-def log_hyperparameters(test_id, n_features, n_layers, n_epoch, n_batch_size, regularization):
+
+def log_hyperparameters(test_id, n_features, n_layers, n_epoch, n_batch_size,
+                        regularization):
     """Example function with PEP 484 type annotations.
 
     Args:
@@ -360,22 +373,28 @@ def log_hyperparameters(test_id, n_features, n_layers, n_epoch, n_batch_size, re
         The return value. True for success, False otherwise.
 
     """
-    dropout, k_l2, k_l1, a_l2, a_l1 = unpack_regularization_object(regularization)
+    dropout, k_l2, k_l1, a_l2, a_l1 \
+        = unpack_regularization_object(regularization)
     log_string \
-        = "\nTest Id: {}, Num Features: {}, Num Layers: {}, Num Epochs: {}, Num Batch Size: {}, Dropout: {}, k_l2: {}, k_l1: {}, a_l2: {}, a_l1: {}"\
-        .format(test_id, n_features, n_layers, n_epoch, n_batch_size, dropout, k_l2, k_l1, a_l2, a_l1)
+        = "\nTest Id: {}, Num Features: {}, Num Layers: {}, Num Epochs: {}, \
+        Num Batch Size: {}, Dropout: {}, \
+        k_l2: {}, k_l1: {}, a_l2: {}, a_l1: {}"\
+        .format(test_id, n_features, n_layers, n_epoch, n_batch_size, dropout,
+                k_l2, k_l1, a_l2, a_l1)
     print(log_string)
 
     with open(RESULTS_DETAILS_FILE_NAME, "a") as file:
         file.write(log_string)
 
-#def save_resultsHeader():
+# def save_resultsHeader():
 #    with open(RESULTS_SUMMARY_FILE_NAME, "a") as f:
 #        f.write("\ntest_id, num_features, n_layers, n_epoch, n_batch_size, \
 # rmse, rmse_epsilon, pearson, elapsed_time, dropout, l2\n")
 
-def save_results(test_id, n_features, n_layers, n_epoch, n_batch_size, regularization,
-                 rmse_per_count, rmse_epsilon_per_count, pearson_per_count, elapsed_time):
+
+def save_results(test_id, n_features, n_layers, n_epoch, n_batch_size,
+                 regularization, rmse_per_count, rmse_epsilon_per_count,
+                 pearson_per_count, elapsed_time):
     """Example function with PEP 484 type annotations.
 
     Args:
@@ -386,20 +405,23 @@ def save_results(test_id, n_features, n_layers, n_epoch, n_batch_size, regulariz
         The return value. True for success, False otherwise.
 
     """
-    dropout, k_l2, k_l1, a_l2, a_l1 = unpack_regularization_object(regularization)
+    dropout, k_l2, k_l1, a_l2, a_l1 \
+        = unpack_regularization_object(regularization)
     result_for_print \
-        = "Test Id: {}, Num Features: {}, Num Layers: {}, Num Epochs: {}, Num Batch Size: {}, Dropout: {}, k_l2: {}, k_l1: {}, a_l2: {}, a_l1: {}, RMSE: {}, Epsilon RMSE: {}, Pearson: {}, Elapsed Time: {}"\
-            .format(test_id, n_features, n_layers, n_epoch, n_batch_size, dropout,
-                    k_l2, k_l1, a_l2, a_l1, mean(rmse_per_count),
+        = "Test Id: {}, Num Features: {}, Num Layers: {}, Num Epochs: {}, \
+        Num Batch Size: {}, Dropout: {}, k_l2: {}, k_l1: {}, a_l2: {}, \
+        a_l1: {}, RMSE: {}, Epsilon RMSE: {}, Pearson: {}, Elapsed Time: {}"\
+            .format(test_id, n_features, n_layers, n_epoch, n_batch_size,
+                    dropout, k_l2, k_l1, a_l2, a_l1, mean(rmse_per_count),
                     mean(rmse_epsilon_per_count), mean(pearson_per_count),
                     elapsed_time)
     print("\nOverall Results:\n" + result_for_print)
 
-    result_string_for_csv = '\n{},{},{},{},{},{},{},{},{},{},{},{},{},{}'.format(
-        test_id, n_features, n_layers, n_epoch, n_batch_size,
-        mean(rmse_per_count), mean(rmse_epsilon_per_count),
-        mean(pearson_per_count), elapsed_time, dropout,
-        k_l2, k_l1, a_l2, a_l1)
+    result_string_for_csv = '\n{},{},{},{},{},{},{},{},{},{},{},{},{},{}'\
+        .format(test_id, n_features, n_layers, n_epoch, n_batch_size,
+                mean(rmse_per_count), mean(rmse_epsilon_per_count),
+                mean(pearson_per_count), elapsed_time, dropout,
+                k_l2, k_l1, a_l2, a_l1)
 
     with open(RESULTS_SUMMARY_FILE_NAME, "a") as file:
         file.write(result_string_for_csv)
@@ -410,7 +432,8 @@ def save_results(test_id, n_features, n_layers, n_epoch, n_batch_size, regulariz
 
 def accumulate_results_from_folds(y_test_for_all_folds, prediction_folds,
                                   prediction_epsilon_folds, i_fold,
-                                  prediction_from_fold, ci_low, ci_high, y_test):
+                                  prediction_from_fold, ci_low, ci_high,
+                                  y_test):
     """Example function with PEP 484 type annotations.
 
     Args:
@@ -444,8 +467,9 @@ def accumulate_results_from_folds(y_test_for_all_folds, prediction_folds,
         prediction_epsilon_folds = concatenate(
             [prediction_epsilon_folds, prediction_epsilon[:]])
 
-    return y_test_for_all_folds, prediction_folds, \
-           prediction_epsilon_folds, prediction_epsilon
+    return y_test_for_all_folds, prediction_folds,\
+        prediction_epsilon_folds, prediction_epsilon
+
 
 def compute_metrics(y_test_normalized, prediction_normalized,
                     prediction_epsilon_normalized, debug):
@@ -464,23 +488,23 @@ def compute_metrics(y_test_normalized, prediction_normalized,
     prediction_epsilon = prediction_epsilon_normalized * 5
 
     if debug:
-        print("            y_test Normalized: "
-              + ', '.join(["%.2f" % e for e in y_test_normalized]))
-        print("        Prediction Normalized: "
-              +', '.join(["%.2f" % e for e in prediction_normalized]))
-        print("Epsilon Prediction Normalized: "
-              +', '.join(["%.2f" % e for e in prediction_epsilon_normalized]))
+        print("            y_test Normalized: " +
+              ', '.join(["%.2f" % e for e in y_test_normalized]))
+        print("        Prediction Normalized: " +
+              ', '.join(["%.2f" % e for e in prediction_normalized]))
+        print("Epsilon Prediction Normalized: " +
+              ', '.join(["%.2f" % e for e in prediction_epsilon_normalized]))
 
     if debug:
-        print("                       y_test: "
-              +', '.join(["%.2f" % e for e in y_test]))
-        print("                   Prediction: "
-              +', '.join(["%.2f" % e for e in prediction]))
-        print("           Epsilon Prediction: "
-              +', '.join(["%.2f" % e for e in prediction_epsilon]))
+        print("                       y_test: " +
+              ', '.join(["%.2f" % e for e in y_test]))
+        print("                   Prediction: " +
+              ', '.join(["%.2f" % e for e in prediction]))
+        print("           Epsilon Prediction: " +
+              ', '.join(["%.2f" % e for e in prediction_epsilon]))
 
-    #mse=mean_squared_error(y_test, prediction_from_fold)
-    #rmse https://www.kaggle.com/wiki/RootMeanSquaredError
+    # mse=mean_squared_error(y_test, prediction_from_fold)
+    # rmse https://www.kaggle.com/wiki/RootMeanSquaredError
 
     rmse = mean_squared_error(y_test, prediction)**0.5
     rmse_epsilon = mean_squared_error(y_test, prediction_epsilon)**0.5
@@ -496,6 +520,7 @@ def compute_metrics(y_test_normalized, prediction_normalized,
         print("     Pearson: %.3f" % r_value)
 
     return rmse, rmse_epsilon, r_value, p_value
+
 
 def compute_results(y_test_for_all_folds, prediction_folds,
                     prediction_epsilon_folds, rmse_per_count,
@@ -519,6 +544,7 @@ def compute_results(y_test_for_all_folds, prediction_folds,
     pearson_per_count.append(r_value)
 
     return rmse_per_count, rmse_epsilon_per_count, pearson_per_count
+
 
 def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
               n_layers, n_epoch, n_batch_size, regularization, debug):
@@ -547,10 +573,10 @@ def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
     model_weights = dl_model.get_weights()
 
     if debug:
-        print("\nModel Weights:\n" +str(model_weights))
+        print("\nModel Weights:\n" + str(model_weights))
 
-    for count in range(1, count + 1):
-        print("\nCount: " + str(count)+ " Time: " + time.ctime())
+    for count in range(1, count+1):
+        print("\nCount: " + str(count) + " Time: " + time.ctime())
 
         y_test_for_all_folds = []
         prediction_folds = []
@@ -562,12 +588,12 @@ def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
             x_train, y_train, x_test, y_test, ci_low, ci_high = prepare_data(
                 attributes, train_index, test_index, labels, n_features)
             dl_model.set_weights(model_weights)
-            train_model(
-                dl_model, x_train, y_train, n_batch_size, n_epoch, x_test, y_test)
+            train_model(dl_model, x_train, y_train, n_batch_size, n_epoch,
+                        x_test, y_test)
             prediction_from_fold = dl_model.predict(x_test)
 
             y_test_for_all_folds, prediction_folds, \
-            prediction_epsilon_folds, prediction_epsilon \
+                prediction_epsilon_folds, prediction_epsilon \
                 = accumulate_results_from_folds(
                     y_test_for_all_folds, prediction_folds,
                     prediction_epsilon_folds, i_fold,
@@ -575,7 +601,8 @@ def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
 
             if debug:
                 print("\nMetrics for fold: " + str(i_fold + 1))
-                compute_metrics(y_test, prediction_from_fold, prediction_epsilon, debug)
+                compute_metrics(y_test, prediction_from_fold,
+                                prediction_epsilon, debug)
 
             i_fold += 1
 
@@ -586,12 +613,13 @@ def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
                               prediction_epsilon_folds, rmse_per_count,
                               rmse_epsilon_per_count, pearson_per_count, debug)
 
-    elapsed_time = time.strftime("%H:%M:%S", \
+    elapsed_time = time.strftime("%H:%M:%S",
                                  time.gmtime(time.time()-start_time))
     save_results(
         test_id, n_features, n_layers, n_epoch, n_batch_size, regularization,
         rmse_per_count, rmse_epsilon_per_count, pearson_per_count,
         elapsed_time)
+
 
 def unpack_regularization_object(regularization):
     """Example function with PEP 484 type annotations.
@@ -611,6 +639,7 @@ def unpack_regularization_object(regularization):
     a_l1 = regularization["a_l1"]
     return dropout, k_l2, k_l1, a_l2, a_l1
 
+
 def pack_regularization_object(dropout, k_l2, k_l1, a_l2, a_l1):
     """Example function with PEP 484 type annotations.
 
@@ -629,6 +658,7 @@ def pack_regularization_object(dropout, k_l2, k_l1, a_l2, a_l1):
     regularization["a_l2"] = a_l2
     regularization["a_l1"] = a_l1
     return regularization
+
 
 def create_model_1(n_features):
     """Example function with PEP 484 type annotations.
@@ -650,7 +680,8 @@ def create_model_1(n_features):
     k_l1 = True
     a_l2 = False
     a_l1 = False
-    regularization = pack_regularization_object(dropout, k_l2, k_l1, a_l2, a_l1)
+    regularization = pack_regularization_object(
+        dropout, k_l2, k_l1, a_l2, a_l1)
 
     dl_model = Sequential()
 
@@ -672,6 +703,7 @@ def create_model_1(n_features):
 
     return dl_model, n_layers, n_epoch, n_batch_size, regularization
 
+
 def build_parser():
     """Example function with PEP 484 type annotations.
 
@@ -691,6 +723,7 @@ def build_parser():
                         help='model type(random, custom)',
                         metavar='MODEL TYPE', required=False)
     return parser
+
 
 def main():
     """Example function with PEP 484 type annotations.
@@ -714,7 +747,7 @@ def main():
         # save_resultsHeader()
         # running the same test count times
         count = 3
-        ## For Random Search Hyperparameter exploration
+        # For Random Search Hyperparameter exploration
         for i in range(1, 500):
             # n_layers = int(power(2,4*np.random.rand()))
             n_layers = random.randint(1, 20)
@@ -724,8 +757,9 @@ def main():
             regularization = pack_regularization_object(
                 dropout=random.choice([True, False]),
                 k_l2=False, k_l1=True, a_l2=False, a_l1=False)
-            run_model(attributes, labels, test_id, None, count, K, NUM_FEATURES,
-                      n_layers, n_epoch, n_batch_size, regularization, debug=options.debug)
+            run_model(attributes, labels, test_id, None, count, K,
+                      NUM_FEATURES, n_layers, n_epoch, n_batch_size,
+                      regularization, debug=options.debug)
     else:
         count = 1
         test_id = str("custom") + str(rand())
@@ -733,7 +767,8 @@ def main():
             = create_model_1(NUM_FEATURES)
         run_model(
             attributes, labels, test_id, dl_model, count, K, NUM_FEATURES,
-            n_layers, n_epoch, n_batch_size, regularization, debug=options.debug)
+            n_layers, n_epoch, n_batch_size, regularization,
+            debug=options.debug)
 
 if __name__ == '__main__':
     main()
