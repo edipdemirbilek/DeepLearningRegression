@@ -1,9 +1,13 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sun Nov 26 18:17:37 2017
-
 @author: edip.demirbilek
+
+This module includes all best perfroming deep learning models that have fully
+connected layers. Model's Parameters are  obtained using random search over
+a large set of hyperparameters.
+
+Todo:
+    * Add all best performing models.
 """
 from keras.models import Sequential
 from keras.layers.core import Dense
@@ -14,15 +18,47 @@ from deep_learning.dl_utils import pack_regularization_object
 
 
 def create_model_1(n_features):
-    """Example function with PEP 484 type annotations.
+    """
+    Model 1 -- Fully connected layers
+        loss -- 'Mean Square Error'mse''
+        optimizer -- Adadelta
+        metrics -- ['accuracy']
+    Layers
+        Layer 0 -- Input Layer
+            #nodes: n_features
+        Layer 1 -- Dense
+            #nodes: 100,
+            activation: 'tanh',
+            kernel_initializer: 'uniform',
+            kernel_regularizer: l1 value 0.000772747534144
+        Layer 2 -- Dense
+            #nodes: 54
+            activation: 'tanh',
+            kernel_regularizer: l1 value 0.00119620962974
+        Layer 3 -- Dense
+            #nodes: 4
+            activation: 'tanh',
+            kernel_regularizer: l1 value 0.000136272407271
+        Layer 4 -- Dense, Output
+            #nodes: 1
+            activation: 'softplus'
 
-    Args:
-        param1: The first parameter.
-        param2: The second parameter.
+    Arguments:
+        n_features -- Number of features, int
 
     Returns:
-        The return value. True for success, False otherwise.
-
+        dl_model -- Deep Learning model of type keras.models.Sequential
+        n_layers -- Number of layers, int value 3
+        n_epoch -- Number og epochs, int value 644
+        n_batch_size -- Batch size, int value 120
+        regularization -- Dictionary of shape
+            {
+                'dropout': False,
+                'k_l2': False,
+                'k_l1': True,
+                'a_l2': False,
+                'a_l1': False,
+            }
     """
     n_layers = 3
     n_epoch = 644
