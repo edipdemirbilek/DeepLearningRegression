@@ -4,12 +4,11 @@
 
 Dataset Utils..
 
-This module allow us to read the Parametric and Bitstream version of the  INRS
-Audiovisual Quality Dataset from file system.
+This module allow us to process the Parametric and Bitstream version of the
+INRS Audiovisual Quality Dataset.
 
 Todo:
     * Read parametric version of the INRS Audiovisual Quality Dataset.
-    * Complete Docstrings
 """
 import random
 from numpy import array, asarray
@@ -18,15 +17,31 @@ DATASET_FILE_NAME = "BitstreamDataset_ColumnsSorted.csv"
 
 
 def pack_partitioned_data(x_train, x_test, y_train, y_test, ci_high, ci_low):
-    """Example function with PEP 484 type annotations.
+    """
+    Packs training and test data, and confidence intervals.
 
-    Args:
-        param1: The first parameter.
-        param2: The second parameter.
+    Arguments:
+        x_train -- Training attributes,
+            numpy.ndarray of shape (training_size, n_features)
+        x_test -- Test attributes,
+            numpy.ndarray of shape (test_size, n_features)
+        y_train -- Training labels, numpy.ndarray of shape (training_size, )
+        y_test -- Test labels, numpy.ndarray of shape (test_size, )
+        ci_high -- 95% Confidence Interval high values,
+            numpy.ndarray of shape (test_size, 1)
+        ci_low -- 95% Confidence Interval low values,
+            numpy.ndarray of shape (test_size, 1)
 
     Returns:
-        The return value. True for success, False otherwise.
-
+        partitioned_data -- Dictionary of shape:
+            {
+                'x_train': x_train,
+                'x_test': x_test,
+                'y_train': y_train,
+                'y_test': y_test,
+                'ci_high': ci_high,
+                'ci_low': ci_low
+            }
     """
     partitioned_data = {}
     partitioned_data["x_train"] = x_train
@@ -35,19 +50,36 @@ def pack_partitioned_data(x_train, x_test, y_train, y_test, ci_high, ci_low):
     partitioned_data["y_test"] = y_test
     partitioned_data["ci_high"] = ci_high
     partitioned_data["ci_low"] = ci_low
+
     return partitioned_data
 
 
 def unpack_partitioned_data(partitioned_data):
-    """Example function with PEP 484 type annotations.
+    """
+    Unpacks training and test data, and confidence intervals.
 
-    Args:
-        param1: The first parameter.
-        param2: The second parameter.
+    Arguments:
+        partitioned_data -- Dictionary of shape:
+            {
+                'x_train': x_train,
+                'x_test': x_test,
+                'y_train': y_train,
+                'y_test': y_test,
+                'ci_high': ci_high,
+                'ci_low': ci_low
+            }
 
     Returns:
-        The return value. True for success, False otherwise.
-
+        x_train -- Training attributes,
+            numpy.ndarray of shape (training_size, n_features)
+        x_test -- Test attributes,
+            numpy.ndarray of shape (test_size, n_features)
+        y_train -- Training labels, numpy.ndarray of shape (training_size, )
+        y_test -- Test labels, numpy.ndarray of shape (test_size, )
+        ci_high -- 95% Confidence Interval high values,
+            numpy.ndarray of shape (test_size, 1)
+        ci_low -- 95% Confidence Interval low values,
+            numpy.ndarray of shape (test_size, 1)
     """
     x_train = partitioned_data["x_train"]
     x_test = partitioned_data["x_test"]
@@ -59,15 +91,16 @@ def unpack_partitioned_data(partitioned_data):
 
 
 def load_dataset():
-    """Example function with PEP 484 type annotations.
+    """
+    Reads and shuffles dataset from file DATASET_FILE_NAME and returns
+    attributes(data) and labels.
 
-    Args:
-        param1: The first parameter.
-        param2: The second parameter.
+    Arguments:
+        None.
 
     Returns:
-        The return value. True for success, False otherwise.
-
+        attributes -- Attributes(data), list of size data_size x n_featurees
+        labels -- Labels, list of size data_size
     """
     # arrange data into list for labels and list of lists for attributes
     attributes_tmp = []
@@ -103,15 +136,39 @@ def load_dataset():
 
 
 def partition_data(attributes, train_index, test_index, labels, n_features):
-    """Example function with PEP 484 type annotations.
+    """
+    Partition attributes(data) and labels into training and test data using
+    train and test indexes provided and packs them into partitioned_data.
 
-    Args:
-        param1: The first parameter.
-        param2: The second parameter.
+    Arguments:
+        attributes -- Attributes(data), list of size data_size x n_featurees
+        train_index -- Training Indexes, numpy.ndarray of size (train_size, )
+        test_index -- Test Indexes, numpy.ndarray of size (test_size, )
+        labels -- Labels, list of size data_size
+        n_features -- Number of features, int
 
     Returns:
-        The return value. True for success, False otherwise.
-
+        partitioned_data -- Partitioned data, Dictionary of shape:
+            {
+                'x_train': x_train,
+                'x_test': x_test,
+                'y_train': y_train,
+                'y_test': y_test,
+                'ci_high': ci_high,
+                'ci_low': ci_low
+            }
+            here:
+                x_train -- Training attributes,
+                    numpy.ndarray of shape (training_size, n_features)
+                x_test -- Test attributes, \
+                    numpy.ndarray of shape (test_size, n_features)
+                y_train -- Training labels, numpy.ndarray of shape
+                    (training_size, )
+                y_test -- Test labels, numpy.ndarray of shape (test_size, )
+                ci_high -- 95% Confidence Interval high values,
+                    numpy.ndarray of shape (test_size, 1)
+                ci_low -- 95% Confidence Interval low values,
+                    numpy.ndarray of shape (test_size, 1)
     """
     x_train_all_attributes, x_test_all_attributes, y_train, y_test \
         = [attributes[i] for i in train_index], \
@@ -140,15 +197,30 @@ def partition_data(attributes, train_index, test_index, labels, n_features):
 
 
 def normalize_data(partitioned_data):
-    """Example function with PEP 484 type annotations.
+    """
+    Normalize training and test data, and confidence interval values.
 
-    Args:
-        param1: The first parameter.
-        param2: The second parameter.
+    Arguments:
+        partitioned_data -- Partitioned data, Dictionary of shape:
+            {
+                'x_train': x_train,
+                'x_test': x_test,
+                'y_train': y_train,
+                'y_test': y_test,
+                'ci_high': ci_high,
+                'ci_low': ci_low
+            }
 
     Returns:
-        The return value. True for success, False otherwise.
-
+        partitioned_data -- Partitioned data, Dictionary of shape:
+            {
+                'x_train': x_train normalized (0 mean and 1 variance)
+                'x_test': x_test normalized (0 mean and 1 variance)
+                'y_train': y_train/5
+                'y_test': y_test/5
+                'ci_high': ci_high normalized (0 mean and 1 variance)
+                'ci_low': ci_low normalized (0 mean and 1 variance)
+            }
     """
     x_train, x_test, y_train, y_test, ci_high, ci_low \
         = unpack_partitioned_data(partitioned_data)
@@ -176,15 +248,30 @@ def normalize_data(partitioned_data):
 
 
 def prepare_data(attributes, train_index, test_index, labels, n_features):
-    """Example function with PEP 484 type annotations.
+    """
+    Partition and normalize data.
 
-    Args:
-        param1: The first parameter.
-        param2: The second parameter.
+    Arguments:
+        attributes -- Attributes(data), list of size data_size x n_featurees
+        train_index -- Training Indexes, numpy.ndarray of size (train_size, )
+        test_index -- Test Indexes, numpy.ndarray of size (test_size, )
+        labels -- Labels, list of size data_size
+        n_features -- Number of features, int
 
     Returns:
-        The return value. True for success, False otherwise.
-
+        partitioned_data -- Partitioned data, Dictionary of shape:
+            {
+                'x_train': Training attributes normalized
+                    (0 mean and 1 variance)
+                'x_test': Test data normalized
+                    (0 mean and 1 variance)
+                'y_train': Training labels divided by 5
+                'y_test': Test labels divided by 5
+                'ci_high': 95% Confidence interval high values normalized
+                    (0 mean and 1 variance)
+                'ci_low': 95% Confidence interval low values normalized
+                    (0 mean and 1 variance)
+            }
     """
     partitioned_data = partition_data(
         attributes, train_index, test_index, labels, n_features)
