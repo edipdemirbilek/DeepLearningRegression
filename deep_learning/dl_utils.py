@@ -29,30 +29,11 @@ from keras.layers import Dropout
 from keras.optimizers import Adadelta
 from keras import regularizers
 
-from dataset_utils import prepare_data
+from dataset_utils import prepare_data, unpack_partitioned_data
 
 # File Names
 RESULTS_DETAILS_FILE_NAME = "Details_new.txt"
 RESULTS_SUMMARY_FILE_NAME = "Results_new.csv"
-
-
-def unpack_regularization_object(regularization):
-    """Example function with PEP 484 type annotations.
-
-    Args:
-        param1: The first parameter.
-        param2: The second parameter.
-
-    Returns:
-        The return value. True for success, False otherwise.
-
-    """
-    dropout = regularization["dropout"]
-    k_l2 = regularization["k_l2"]
-    k_l1 = regularization["k_l1"]
-    a_l2 = regularization["a_l2"]
-    a_l1 = regularization["a_l1"]
-    return dropout, k_l2, k_l1, a_l2, a_l1
 
 
 def pack_regularization_object(dropout, k_l2, k_l1, a_l2, a_l1):
@@ -73,6 +54,25 @@ def pack_regularization_object(dropout, k_l2, k_l1, a_l2, a_l1):
     regularization["a_l2"] = a_l2
     regularization["a_l1"] = a_l1
     return regularization
+
+
+def unpack_regularization_object(regularization):
+    """Example function with PEP 484 type annotations.
+
+    Args:
+        param1: The first parameter.
+        param2: The second parameter.
+
+    Returns:
+        The return value. True for success, False otherwise.
+
+    """
+    dropout = regularization["dropout"]
+    k_l2 = regularization["k_l2"]
+    k_l1 = regularization["k_l1"]
+    a_l2 = regularization["a_l2"]
+    a_l1 = regularization["a_l1"]
+    return dropout, k_l2, k_l1, a_l2, a_l1
 
 
 def initialize_layer_parameters(regularization):
@@ -337,7 +337,7 @@ def save_results(test_id, n_features, n_layers, n_epoch, n_batch_size,
 
 def accumulate_results_from_folds(y_test_for_all_folds, prediction_folds,
                                   prediction_epsilon_folds, i_fold,
-                                  prediction_from_fold, ci_low, ci_high,
+                                  prediction_from_fold, ci_high, ci_low,
                                   y_test):
     """Example function with PEP 484 type annotations.
 
@@ -490,8 +490,10 @@ def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
 
         k_fold = KFold(n_splits=k)
         for train_index, test_index in k_fold.split(attributes):
-            x_train, y_train, x_test, y_test, ci_low, ci_high = prepare_data(
+            partitioned_data = prepare_data(
                 attributes, train_index, test_index, labels, n_features)
+            x_train, x_test, y_train, y_test, ci_high, ci_low \
+                = unpack_partitioned_data(partitioned_data)
             dl_model.set_weights(model_weights)
             train_model(dl_model, x_train, y_train, n_batch_size, n_epoch,
                         x_test, y_test)
@@ -502,7 +504,7 @@ def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
                 = accumulate_results_from_folds(
                     y_test_for_all_folds, prediction_folds,
                     prediction_epsilon_folds, i_fold,
-                    prediction_from_fold, ci_low, ci_high, y_test)
+                    prediction_from_fold, ci_high, ci_low, y_test)
 
             if debug:
                 print("\nMetrics for fold: " + str(i_fold + 1))

@@ -17,6 +17,47 @@ from numpy import array, asarray
 DATASET_FILE_NAME = "BitstreamDataset_ColumnsSorted.csv"
 
 
+def pack_partitioned_data(x_train, x_test, y_train, y_test, ci_high, ci_low):
+    """Example function with PEP 484 type annotations.
+
+    Args:
+        param1: The first parameter.
+        param2: The second parameter.
+
+    Returns:
+        The return value. True for success, False otherwise.
+
+    """
+    partitioned_data = {}
+    partitioned_data["x_train"] = x_train
+    partitioned_data["x_test"] = x_test
+    partitioned_data["y_train"] = y_train
+    partitioned_data["y_test"] = y_test
+    partitioned_data["ci_high"] = ci_high
+    partitioned_data["ci_low"] = ci_low
+    return partitioned_data
+
+
+def unpack_partitioned_data(partitioned_data):
+    """Example function with PEP 484 type annotations.
+
+    Args:
+        param1: The first parameter.
+        param2: The second parameter.
+
+    Returns:
+        The return value. True for success, False otherwise.
+
+    """
+    x_train = partitioned_data["x_train"]
+    x_test = partitioned_data["x_test"]
+    y_train = partitioned_data["y_train"]
+    y_test = partitioned_data["y_test"]
+    ci_high = partitioned_data["ci_high"]
+    ci_low = partitioned_data["ci_low"]
+    return x_train, x_test, y_train, y_test, ci_high, ci_low
+
+
 def load_dataset():
     """Example function with PEP 484 type annotations.
 
@@ -61,7 +102,7 @@ def load_dataset():
     return attributes, labels
 
 
-def prepare_data(attributes, train, test, labels, n_features):
+def partition_data(attributes, train_index, test_index, labels, n_features):
     """Example function with PEP 484 type annotations.
 
     Args:
@@ -73,10 +114,10 @@ def prepare_data(attributes, train, test, labels, n_features):
 
     """
     x_train_all_attributes, x_test_all_attributes, y_train, y_test \
-        = [attributes[i] for i in train], \
-          [attributes[i] for i in test], \
-          [labels[i] for i in train], \
-          [labels[i] for i in test]
+        = [attributes[i] for i in train_index], \
+          [attributes[i] for i in test_index], \
+          [labels[i] for i in train_index], \
+          [labels[i] for i in test_index]
 
     x_train = []
     x_test = []
@@ -91,10 +132,26 @@ def prepare_data(attributes, train, test, labels, n_features):
         ci_high.append(x_test_row[-2:-1])
         ci_low.append(x_test_row[-1:])
 
-    x_train = asarray(x_train)
-    x_test = asarray(x_test)
-    y_train = asarray(y_train)
-    y_test = asarray(y_test)
+    partitioned_data = pack_partitioned_data(asarray(x_train), asarray(x_test),
+                                             asarray(y_train), asarray(y_test),
+                                             asarray(ci_high), asarray(ci_low))
+
+    return partitioned_data
+
+
+def normalize_data(partitioned_data):
+    """Example function with PEP 484 type annotations.
+
+    Args:
+        param1: The first parameter.
+        param2: The second parameter.
+
+    Returns:
+        The return value. True for success, False otherwise.
+
+    """
+    x_train, x_test, y_train, y_test, ci_high, ci_low \
+        = unpack_partitioned_data(partitioned_data)
 
     # This is for 0 mean and 1 variance
     x_mean, x_std = x_train.mean(axis=0), x_train.std(axis=0)
@@ -112,7 +169,29 @@ def prepare_data(attributes, train, test, labels, n_features):
     x_test = array(x_test)
     y_test = array(y_test)
 
-    return x_train, y_train, x_test, y_test, ci_low, ci_high
+    partitioned_data = pack_partitioned_data(x_train, x_test, y_train,
+                                             y_test, ci_high, ci_low)
+
+    return partitioned_data
+
+
+def prepare_data(attributes, train_index, test_index, labels, n_features):
+    """Example function with PEP 484 type annotations.
+
+    Args:
+        param1: The first parameter.
+        param2: The second parameter.
+
+    Returns:
+        The return value. True for success, False otherwise.
+
+    """
+    partitioned_data = partition_data(
+        attributes, train_index, test_index, labels, n_features)
+
+    partitioned_data = normalize_data(partitioned_data)
+
+    return partitioned_data
 
 # def save_resultsHeader():
 #    with open(RESULTS_SUMMARY_FILE_NAME, "a") as f:
