@@ -4,30 +4,61 @@
 
 Multimedia Audiovisual Quality Models.
 
-This module includes Deep Learning and Deceision Trees Based Ensamble Models
-developed using the Parametric and Bitstream version of the  INRS Audiovisual
-Quality Dataset.
+This module includes multimedia audiovisual quality models based on
+Deep Learning and Deceision Trees Ensamble MODELS developed using the
+Parametric and Bitstream version of the  INRS Audiovisual Quality Dataset.
 
 Module reads model type (Deep Learning or Decision Trees based ensamble
 methods) and is capable of conductiong the random hyperparameter search for
-preselected parameter range as well as running specific models tested with high
-accuracy.
+a large preselected parameter range as well as running specific models tested
+with high accuracy.
 
 Usage Examples:
 
         $ python DLRegressionMOSKFold.py
+            Creates and runs Deep Learning Custom Model 1.
+
         $ python DLRegressionMOSKFold.py --model_type=random
+            Creates n Deep Learning models by randomly selecting
+            hyperparameters over a large range.
+
         $ python DLRegressionMOSKFold.py --model_type=random --debug=True
+            Creates n Deep Learning models by randomly selecting
+            hyperparameters over a large range. Displays debug messages.
+
         $ python DLRegressionMOSKFold.py --model_type=custom
+            Creates and runs Deep Learning Custom Model 1.
+
         $ python DLRegressionMOSKFold.py --model_type=custom --debug=True
+            Creates and runs Deep Learning Custom Model 1. Displays debug
+            messages.
 
 Attributes:
-    module_level_variable1 (int):
+    Common:
+        debug -- debug, boolean, default False
+        model_type -- string, dl/rf/bg, default dl
+        random_search -- boolean, default False
+        model_id -- string, default 1
+        num_models -- int, default 500
+        k -- int, default 4
+        n_features -- int, default 127
+        count -- int, default 3
+
+    Deep Learning:
+        n_layer_max -- int, default 20
+        n_epoch_max -- int, default 2**14
+        n_batch_size -- int, default 120
+        dropout -- boolean, default random
+        k_l2 -- boolean, default random
+        k_l1 -- boolean, default random
+        a_l2 -- boolean, default random
+        a_l1 -- boolean, default random
+
+    Random Forests:
 
 Todo:
     * Decision Trees based Ensamble Methods
     * Complete Docstrings
-    * Add custom models
 """
 
 import random
