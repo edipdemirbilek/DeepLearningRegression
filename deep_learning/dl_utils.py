@@ -377,7 +377,7 @@ def accumulate_results_from_folds(y_test_for_all_folds, prediction_folds,
 
 
 def compute_metrics(y_test_normalized, prediction_normalized,
-                    prediction_epsilon_normalized, debug):
+                    prediction_epsilon_normalized, verbose):
     """Example function with PEP 484 type annotations.
 
     Args:
@@ -392,7 +392,7 @@ def compute_metrics(y_test_normalized, prediction_normalized,
     prediction = prediction_normalized * 5
     prediction_epsilon = prediction_epsilon_normalized * 5
 
-    if debug:
+    if verbose:
         print("            y_test Normalized: " +
               ', '.join(["%.2f" % e for e in y_test_normalized]))
         print("        Prediction Normalized: " +
@@ -400,7 +400,7 @@ def compute_metrics(y_test_normalized, prediction_normalized,
         print("Epsilon Prediction Normalized: " +
               ', '.join(["%.2f" % e for e in prediction_epsilon_normalized]))
 
-    if debug:
+    if verbose:
         print("                       y_test: " +
               ', '.join(["%.2f" % e for e in y_test]))
         print("                   Prediction: " +
@@ -419,7 +419,7 @@ def compute_metrics(y_test_normalized, prediction_normalized,
 
     r_value, p_value = sp.stats.pearsonr(array(y_test), array(prediction))
 
-    if debug:
+    if verbose:
         print("        RMSE: %.3f" % rmse)
         print("Epsilon RMSE: %.3f" % rmse_epsilon)
         print("     Pearson: %.3f" % r_value)
@@ -429,7 +429,7 @@ def compute_metrics(y_test_normalized, prediction_normalized,
 
 def compute_results(y_test_for_all_folds, prediction_folds,
                     prediction_epsilon_folds, rmse_per_count,
-                    rmse_epsilon_per_count, pearson_per_count, debug):
+                    rmse_epsilon_per_count, pearson_per_count, verbose):
     """Example function with PEP 484 type annotations.
 
     Args:
@@ -442,7 +442,7 @@ def compute_results(y_test_for_all_folds, prediction_folds,
     """
     rmse, rmse_epsilon, r_value, _ = compute_metrics(
         y_test_for_all_folds, prediction_folds,
-        prediction_epsilon_folds, debug)
+        prediction_epsilon_folds, verbose)
 
     rmse_per_count.append(rmse)
     rmse_epsilon_per_count.append(rmse_epsilon)
@@ -452,7 +452,7 @@ def compute_results(y_test_for_all_folds, prediction_folds,
 
 
 def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
-              n_layers, n_epoch, n_batch_size, regularization, debug):
+              n_layers, n_epoch, n_batch_size, regularization, verbose):
     """Example function with PEP 484 type annotations.
 
     Args:
@@ -477,7 +477,7 @@ def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
 
     model_weights = dl_model.get_weights()
 
-    if debug:
+    if verbose:
         print("\nModel Weights:\n" + str(model_weights))
 
     for count in range(1, count+1):
@@ -506,19 +506,20 @@ def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
                     prediction_epsilon_folds, i_fold,
                     prediction_from_fold, ci_high, ci_low, y_test)
 
-            if debug:
+            if verbose:
                 print("\nMetrics for fold: " + str(i_fold + 1))
                 compute_metrics(y_test, prediction_from_fold,
-                                prediction_epsilon, debug)
+                                prediction_epsilon, verbose)
 
             i_fold += 1
 
-        if debug:
+        if verbose:
             print("\nMetrics for count: " + str(count))
         rmse_per_count, rmse_epsilon_per_count, pearson_per_count \
             = compute_results(y_test_for_all_folds, prediction_folds,
                               prediction_epsilon_folds, rmse_per_count,
-                              rmse_epsilon_per_count, pearson_per_count, debug)
+                              rmse_epsilon_per_count, pearson_per_count,
+                              verbose)
 
     elapsed_time = time.strftime("%H:%M:%S",
                                  time.gmtime(time.time()-start_time))
