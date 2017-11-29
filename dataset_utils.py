@@ -96,7 +96,7 @@ def load_dataset():
     attributes(data) and labels.
 
     Arguments:
-        None.
+        None
 
     Returns:
         attributes -- Attributes(data), list of size data_size x n_featurees
@@ -279,8 +279,3 @@ def prepare_data(attributes, train_index, test_index, labels, n_features):
     partitioned_data = normalize_data(partitioned_data)
 
     return partitioned_data
-
-# def save_resultsHeader():
-#    with open(RESULTS_SUMMARY_FILE_NAME, "a") as f:
-#        f.write("\ntest_id, num_features, n_layers, n_epoch, n_batch_size, \
-# rmse, rmse_epsilon, pearson, elapsed_time, dropout, l2\n")

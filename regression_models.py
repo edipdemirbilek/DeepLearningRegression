@@ -15,23 +15,19 @@ with high accuracy.
 
 Usage Examples:
 
-        $ python DLRegressionMOSKFold.py
-            Creates and runs Deep Learning Custom Model 1.
+        $ python regression_models.py
+            This would not run as --m_type parameter is mandatory
 
-        $ python DLRegressionMOSKFold.py --model_type=random
-            Creates n Deep Learning models by randomly selecting
-            hyperparameters over a large range.
+        $ python regression_models.py --m_type=dl
+            This would run dl custom model with id=1
 
-        $ python DLRegressionMOSKFold.py --model_type=random --debug=True
-            Creates n Deep Learning models by randomly selecting
-            hyperparameters over a large range. Displays debug messages.
+        $ python regression_models.py --m_type=dl --random
+            This would create n=500 deep learning based models by randomly
+            selecting hyperparameters using the default values.
 
-        $ python DLRegressionMOSKFold.py --model_type=custom
-            Creates and runs Deep Learning Custom Model 1.
-
-        $ python DLRegressionMOSKFold.py --model_type=custom --debug=True
-            Creates and runs Deep Learning Custom Model 1. Displays debug
-            messages.
+        $ python regression_models.py --h
+            This would print help. Use help or docstrings for a complete list
+            of parameters and operations available.
 
 Attributes:
     Common:
@@ -73,20 +69,20 @@ from numpy.random import rand, uniform
 
 from dataset_utils import load_dataset
 from deep_learning.dl_utils import pack_regularization_object
-from deep_learning.dl_utils import create_model, run_model
+from deep_learning.dl_utils import create_model, run_model, save_header
 from deep_learning.dl_models import create_model_1
 
 
 def build_parser():
-    """Example function with PEP 484 type annotations.
+    """
+    Builds argument parser.
 
-    Args:
-        param1: The first parameter.
-        param2: The second parameter.
+    Arguments:
+        None.
 
     Returns:
-        The return value. True for success, False otherwise.
-
+        parser -- Argument parser. See top level docstrings for detailed
+            options available.
     """
     parser = ArgumentParser()
 
@@ -142,15 +138,19 @@ def build_parser():
 
 
 def main():
-    """Example function with PEP 484 type annotations.
+    """
+    Main function parses input arguments and creates and runs random/custom
+    models based on deep learning.
 
-    Args:
-        param1: The first parameter.
-        param2: The second parameter.
+    Arguments:
+        arguments -- a number of arguments. See top level dostrings for
+        detailed options available.
 
     Returns:
-        The return value. True for success, False otherwise.
+        None
 
+    Raises:
+        Exception -- when a not implemented algorithm (dl or bg) is selected.
     """
     parser = build_parser()
     args = parser.parse_args()
@@ -159,8 +159,7 @@ def main():
 
     if args.m_type == "dl":
         if args.random:
-            # save_resultsHeader()
-
+            save_header()
             # For Random Search Hyperparameter exploration
             for i in range(1, args.n_models):
                 test_id = str(i)+str(rand())
