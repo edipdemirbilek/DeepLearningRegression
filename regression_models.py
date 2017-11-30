@@ -70,7 +70,9 @@ from numpy.random import rand, uniform
 from dataset_utils import load_dataset
 from deep_learning.dl_utils import pack_regularization_object
 from deep_learning.dl_utils import create_model, run_model, save_header
-from deep_learning.dl_models import create_model_1
+from deep_learning.dl_models import dl_model_1, dl_model_2, dl_model_3, \
+    dl_model_4, dl_model_5, dl_model_6, dl_model_7, dl_model_8, dl_model_9, \
+    dl_model_10
 
 
 def build_parser():
@@ -165,8 +167,8 @@ def main():
                 test_id = str(i)+str(rand())
 
                 regularization = pack_regularization_object(
-                        dropout=args.dropout, k_l2=args.k_l2, k_l1=args.k_l1,
-                        a_l2=args.a_l2, a_l1=args.a_l1)
+                    dropout=args.dropout, k_l2=args.k_l2, k_l1=args.k_l1,
+                    a_l2=args.a_l2, a_l1=args.a_l1)
 
                 dl_model = create_model(args.n_layer, args.n_features,
                                         regularization)
@@ -176,12 +178,21 @@ def main():
                           args.n_batch, regularization, verbose=args.verbose)
         else:
 
-            create_custom_model = {1: create_model_1, }
+            custom_dl_models = {1: dl_model_1,
+                                2: dl_model_2,
+                                3: dl_model_3,
+                                4: dl_model_4,
+                                5: dl_model_5,
+                                6: dl_model_6,
+                                7: dl_model_7,
+                                8: dl_model_8,
+                                9: dl_model_9,
+                                10: dl_model_10}
 
             test_id = str("custom") + str(rand())
 
             dl_model, n_layers, n_epoch, n_batch_size, regularization \
-                = create_custom_model[args.model_id](args.n_features)
+                = custom_dl_models[args.model_id](args.n_features)
             run_model(
                 attributes, labels, test_id, dl_model, args.count, args.k,
                 args.n_features, n_layers, n_epoch, n_batch_size,
