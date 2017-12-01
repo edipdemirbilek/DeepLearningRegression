@@ -219,7 +219,7 @@ def log_hyperparameters(test_id, n_features, n_layers, n_epoch, n_batch,
     dropout, k_l2, k_l1, a_l2, a_l1 \
         = unpack_regularization_object(regularization)
     log_string \
-        = "\nTest Id: {}, Num Features: {}, Num Layers: {}, Num Epochs: {}, \
+        = "\nTest Id: {}, Num Features: {}, Num Layers: {}, Num Epochs: {},\
         Num Batch Size: {}, Dropout: {}, \
         k_l2: {}, k_l1: {}, a_l2: {}, a_l1: {}"\
         .format(test_id, n_features, n_layers, n_epoch, n_batch, dropout,
@@ -395,8 +395,8 @@ def save_results(test_id, n_features, n_layers, n_epoch, n_batch,
         = unpack_regularization_object(regularization)
     result_for_print \
         = "Test Id: {}, Num Features: {}, Num Layers: {}, Num Epochs: {}, \
-        Num Batch Size: {}, Dropout: {}, k_l2: {}, k_l1: {}, a_l2: {}, \
-        a_l1: {}, RMSE: {}, Epsilon RMSE: {}, Pearson: {}, Elapsed Time: {}"\
+Num Batch Size: {}, Dropout: {}, k_l2: {}, k_l1: {}, a_l2: {}, \
+a_l1: {}, RMSE: {}, Epsilon RMSE: {}, Pearson: {}, Elapsed Time: {}"\
             .format(test_id, n_features, n_layers, n_epoch, n_batch,
                     dropout, k_l2, k_l1, a_l2, a_l1, mean(rmse),
                     mean(rmse_epsilon), mean(pearson),
@@ -520,10 +520,9 @@ def compute_metrics(y_test_normalized, prediction_normalized,
 
     r_value, p_value = sp.stats.pearsonr(array(y_test), array(prediction))
 
-    if verbose:
-        print("        RMSE: %.3f" % rmse)
-        print("Epsilon RMSE: %.3f" % rmse_epsilon)
-        print("     Pearson: %.3f" % r_value)
+    print("        RMSE: %.3f" % rmse)
+    print("Epsilon RMSE: %.3f" % rmse_epsilon)
+    print("     Pearson: %.3f" % r_value)
 
     return rmse, rmse_epsilon, r_value, p_value
 
@@ -638,15 +637,13 @@ def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
                     prediction_epsilon_all_folds, i_fold, y_test,
                     prediction, ci_high, ci_low)
 
-            if verbose:
-                print("\nMetrics for fold: " + str(i_fold + 1))
-                compute_metrics(y_test, prediction, prediction_epsilon,
-                                verbose)
+            print("\nMetrics for fold: " + str(i_fold + 1))
+            compute_metrics(y_test, prediction, prediction_epsilon,
+                            verbose)
 
             i_fold += 1
 
-        if verbose:
-            print("\nMetrics for count: " + str(count))
+        print("\nMetrics for count: " + str(count))
 
         rmse_all_counts, rmse_epsilon_all_counts, pearson_all_counts \
             = compute_results(y_test_all_folds, prediction_all_folds,

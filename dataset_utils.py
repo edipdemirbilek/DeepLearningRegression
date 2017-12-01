@@ -13,7 +13,7 @@ Todo:
 import random
 from numpy import array, asarray
 
-DATASET_FILE_NAME = "BitstreamDataset_ColumnsSorted.csv"
+DATASET_FILE_NAME = "dataset/bitstream_dataset_columns_sorted.csv"
 
 
 def pack_partitioned_data(x_train, x_test, y_train, y_test, ci_high, ci_low):
