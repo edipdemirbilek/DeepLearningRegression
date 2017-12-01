@@ -189,7 +189,8 @@ def main():
                                 9: dl_model_9,
                                 10: dl_model_10}
 
-            test_id = str("custom") + str(rand())
+            test_id = "dl_model_"+str(args.model_id)
+            save_header()
 
             dl_model, n_layers, n_epoch, n_batch_size, regularization \
                 = custom_dl_models[args.model_id](args.n_features)
