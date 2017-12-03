@@ -15,7 +15,7 @@ from keras.layers.core import Dense
 from keras.optimizers import Adadelta
 from keras import regularizers
 
-from deep_learning.dl_utils import pack_regularization_object
+from utils.dl_util import pack_regularization_object
 
 
 def add_output_layer_and_compile(dl_model):
