@@ -37,7 +37,7 @@ Attributes:
         model_id -- Custom model id, int, default: 1, optional
         n_models -- Max number of models, int, default: 500, optional
         k -- Cross validation k-fold value, int, default: 4, optional
-        n_features -- Number of features, int, default: 127, optional
+        n_features -- Number of features, int, default: 125, optional
         count -- Repeat k-fold cross validation # times, int, default: 3,
             optional
 
@@ -106,7 +106,7 @@ def build_parser():
                         hyperparameters")
     parser.add_argument('--k', type=int, default=4,
                         help="cross validation k-fold value")
-    parser.add_argument('--n_features', type=int, choices=["1 - 127"],
+    parser.add_argument('--n_features', type=int, choices=["1 - 125"],
                         default=None,
                         help="number of features")
     parser.add_argument('--count', type=int, default=3,
@@ -120,7 +120,7 @@ def build_parser():
     parser.add_argument('--n_epoch', type=int,
                         default=None, choices=["1 - 2^14"],
                         help='max number of epochs')
-    parser.add_argument('--n_batch', choices=["1-127"], default=120,
+    parser.add_argument('--n_batch', choices=["1-120"], default=120,
                         help='batch number')
     parser.add_argument('--dropout', action="store_true",
                         default=None,
@@ -195,13 +195,13 @@ def main():
                 test_id = str(i)+str(rand())
 
                 n_features = args.n_features if args.n_features else \
-                    random.randint(1, 127)
+                    random.randint(1, 125)
 
                 n_layer = args.n_layer if args.n_layer else \
                     random.randint(1, 20)
 
                 n_epoch = args.n_epoch if args.n_epoch else \
-                    int(power(2, 14 * uniform(0.642, 1.0)))
+                    int(power(2, 14 * uniform(0, 1.0)))
 
                 dropout = args.dropout if args.dropout else \
                     random.choice([True, False])
@@ -238,7 +238,7 @@ def main():
             test_id = "dl_model_"+str(args.model_id)
             save_dl_header()
 
-            n_features = args.n_features if args.n_features else 127
+            n_features = args.n_features if args.n_features else 125
 
             dl_model, n_layers, n_epoch, n_batch_size, regularization \
                 = custom_dl_models[args.model_id](n_features)
@@ -255,7 +255,7 @@ def main():
                 test_id = str(i)+str(rand())
 
                 n_features = args.n_features if args.n_features else \
-                    random.randint(1, 127)
+                    random.randint(1, 125)
 
                 n_trees = args.n_trees if args.n_trees else \
                     int(power(2, 11 * uniform(0, 1.0)))
