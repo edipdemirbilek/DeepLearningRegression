@@ -67,10 +67,11 @@ from argparse import ArgumentParser
 from numpy import power
 from numpy.random import rand, uniform
 
-from dataset_utils import load_dataset
-from deep_learning.dl_utils import pack_regularization_object
-from deep_learning.dl_utils import create_model, run_model, save_header
-from deep_learning.dl_models import dl_model_1, dl_model_2, dl_model_3, \
+from utils.dataset_util import load_dataset
+from utils.dl_util import pack_regularization_object, \
+    create_dl_model, run_dl_model, save_dl_header
+from utils.rf_util import create_rf_model, run_rf_model, save_rf_header
+from models.dl_models import dl_model_1, dl_model_2, dl_model_3, \
     dl_model_4, dl_model_5, dl_model_6, dl_model_7, dl_model_8, dl_model_9, \
     dl_model_10
 
@@ -106,36 +107,62 @@ def build_parser():
     parser.add_argument('--k', type=int, default=4,
                         help="cross validation k-fold value")
     parser.add_argument('--n_features', type=int, choices=["1 - 127"],
-                        default=127, help="number of features")
+                        default=None,
+                        help="number of features")
     parser.add_argument('--count', type=int, default=3,
                         help="repeat 'count' times k-fold cross validation on \
                         the same model")
 
     # Deep Learning Parameters
-    parser.add_argument('--n_layer', type=int, default=random.randint(1, 20),
-                        choices=["1 - 20"],
+    parser.add_argument('--n_layer', type=int,
+                        default=None, choices=["1 - 20"],
                         help="max number of hidden layers")
     parser.add_argument('--n_epoch', type=int,
-                        default=int(power(2, 14 * uniform(0.642, 1.0))),
-                        choices=["1 - 2^14"], help='max number of \
-                        epochs')
+                        default=None, choices=["1 - 2^14"],
+                        help='max number of epochs')
     parser.add_argument('--n_batch', choices=["1-127"], default=120,
                         help='batch number')
     parser.add_argument('--dropout', action="store_true",
-                        default=random.choice([True, False]),
+                        default=None,
                         help="apply dropout")
     parser.add_argument('--k_l2', action="store_true",
-                        default=False,
+                        default=None,
                         help='kernel L2 regularization')
     parser.add_argument('--k_l1', action="store_true",
-                        default=True,
+                        default=None,
                         help='kernel L1 regularization')
     parser.add_argument('--a_l2', action="store_true",
-                        default=False,
+                        default=None,
                         help='activation L2 regularization')
     parser.add_argument('--a_l1', action="store_true",
-                        default=False,
+                        default=None,
                         help='activation L1 regularization')
+
+    # Random Forests Parameters
+    parser.add_argument('--n_trees', type=int,
+                        default=None, choices=["1 - 200"],
+                        help="number of trees in the forest")
+    parser.add_argument('--max_features',
+                        default=None, choices=['int', 'float', "auto", "sqrt",
+                                               "log2", "None"],
+                        help="number of features to consider when looking for \
+                            the best split")
+    parser.add_argument('--max_depth', default=None,
+                        choices=['int', "None"],
+                        help="maximum depth of the tree")
+    # criterion
+    # min_samples_split
+    # min_samples_leaf
+    # min_weight_fraction_leaf
+    # max_leaf_nodes
+    # min_impurity_split
+    # min_impurity_decrease
+    # bootstrap
+    # oob_score
+    # n_jobs
+    # random_state
+    # warm_start
+
     return parser
 
 
@@ -160,22 +187,41 @@ def main():
     attributes, labels = load_dataset()
 
     if args.m_type == "dl":
+        save_dl_header()
+
         if args.random:
-            save_header()
             # For Random Search Hyperparameter exploration
             for i in range(1, args.n_models):
                 test_id = str(i)+str(rand())
 
+                n_features = args.n_features if args.n_features else \
+                    random.randint(1, 127)
+
+                n_layer = args.n_layer if args.n_layer else \
+                    random.randint(1, 20)
+
+                n_epoch = args.n_epoch if args.n_epoch else \
+                    int(power(2, 14 * uniform(0.642, 1.0)))
+
+                dropout = args.dropout if args.dropout else \
+                    random.choice([True, False])
+
+                k_l2 = args.k_l2 if args.k_l2 else random.choice([True, False])
+                k_l1 = args.k_l1 if args.k_l1 else random.choice([True, False])
+                a_l2 = args.a_l2 if args.a_l2 else random.choice([True, False])
+                a_l1 = args.a_l1 if args.a_l1 else random.choice([True, False])
+
                 regularization = pack_regularization_object(
-                    dropout=args.dropout, k_l2=args.k_l2, k_l1=args.k_l1,
-                    a_l2=args.a_l2, a_l1=args.a_l1)
+                    dropout=dropout, k_l2=k_l2, k_l1=k_l1,
+                    a_l2=a_l2, a_l1=a_l1)
 
-                dl_model = create_model(args.n_layer, args.n_features,
-                                        regularization)
+                dl_model = create_dl_model(n_layer, n_features,
+                                           regularization)
 
-                run_model(attributes, labels, test_id, dl_model, args.count,
-                          args.k, args.n_features, args.n_layer, args.n_epoch,
-                          args.n_batch, regularization, verbose=args.verbose)
+                run_dl_model(attributes, labels, test_id, dl_model, args.count,
+                             args.k, n_features, n_layer, n_epoch,
+                             args.n_batch, regularization,
+                             verbose=args.verbose)
         else:
 
             custom_dl_models = {1: dl_model_1,
@@ -190,16 +236,39 @@ def main():
                                 10: dl_model_10}
 
             test_id = "dl_model_"+str(args.model_id)
-            save_header()
+            save_dl_header()
+
+            n_features = args.n_features if args.n_features else 127
 
             dl_model, n_layers, n_epoch, n_batch_size, regularization \
-                = custom_dl_models[args.model_id](args.n_features)
-            run_model(
+                = custom_dl_models[args.model_id](n_features)
+            run_dl_model(
                 attributes, labels, test_id, dl_model, args.count, args.k,
-                args.n_features, n_layers, n_epoch, n_batch_size,
+                n_features, n_layers, n_epoch, n_batch_size,
                 regularization, verbose=args.verbose)
-    else:
-        raise Exception('Not Implemented')
+    elif args.m_type == "rf":
+        save_rf_header()
+
+        if args.random:
+            # For Random Search Hyperparameter exploration
+            for i in range(1, args.n_models):
+                test_id = str(i)+str(rand())
+
+                n_features = args.n_features if args.n_features else \
+                    random.randint(1, 127)
+
+                n_trees = args.n_trees if args.n_trees else \
+                    int(power(2, 11 * uniform(0, 1.0)))
+
+                max_depth = args.max_depth if args.max_depth else None
+                max_features = args.max_features if args.max_features else \
+                    "auto"
+
+                rf_model = create_rf_model(n_trees, max_depth, max_features)
+
+                run_rf_model(attributes, labels, test_id, rf_model, args.count,
+                             args.k, n_features, n_trees, max_depth,
+                             max_features, verbose=args.verbose)
 
 if __name__ == '__main__':
     main()

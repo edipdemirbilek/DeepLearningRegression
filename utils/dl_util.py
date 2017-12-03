@@ -9,20 +9,16 @@ Audiovisual Quality Dataset from file system.
 
 Todo:
     * Read parametric version of the INRS Audiovisual Quality Dataset.
-    * Complete Docstrings
 """
 import random
 import time
-
 import os
 
 from statistics import mean
 
-from numpy import array, power, zeros, concatenate
+from numpy import power
 from numpy.random import uniform
-import scipy as sp
 
-from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import KFold
 
 from keras.models import Sequential
@@ -31,7 +27,9 @@ from keras.layers import Dropout
 from keras.optimizers import Adadelta
 from keras import regularizers
 
-from dataset_utils import prepare_data, unpack_partitioned_data
+from utils.dataset_util import prepare_data, unpack_partitioned_data
+from utils.common_util import accumulate_results_from_folds, compute_metrics, \
+    compute_and_accumulate_results_from_counts
 
 # File Names
 DL_RESULTS_DETAILS_FILE_NAME = "dl_details.txt"
@@ -198,8 +196,8 @@ def log_layer_parameters(layer, n_nodes, regularization, rate, k_v, a_v):
             print("    a_v: " + str(a_v))
 
 
-def log_hyperparameters(test_id, n_features, n_layers, n_epoch, n_batch,
-                        regularization):
+def log_dl_hyperparameters(test_id, n_features, n_layers, n_epoch, n_batch,
+                           regularization):
     """
     Logs model's hyperparameters to DL_RESULTS_DETAILS_FILE_NAME file and
     stdout.
@@ -230,7 +228,7 @@ def log_hyperparameters(test_id, n_features, n_layers, n_epoch, n_batch,
         file.write(log_string)
 
 
-def add_layers(dl_model, n_features, n_layers, regularization):
+def add_dl_layers(dl_model, n_features, n_layers, regularization):
     """
     Adds hidden layers to the input model using settings provided.
 
@@ -304,7 +302,7 @@ def add_layers(dl_model, n_features, n_layers, regularization):
             i+1, n_nodes, regularization, rate, k_v, a_v)
 
 
-def create_model(n_layers, n_features, regularization):
+def create_dl_model(n_layers, n_features, regularization):
     """
     Creates a deep learning model using settings provided.
 
@@ -319,7 +317,7 @@ def create_model(n_layers, n_features, regularization):
     """
     dl_model = Sequential()
 
-    add_layers(
+    add_dl_layers(
         dl_model, n_features, n_layers, regularization)
 
     dl_model.add(Dense(1, activation='softplus'))
@@ -329,7 +327,7 @@ def create_model(n_layers, n_features, regularization):
     return dl_model
 
 
-def train_model(dl_model, x_train, y_train, n_batch, n_epoch):
+def train_dl_model(dl_model, x_train, y_train, n_batch, n_epoch):
     """
     Trains the deep learning model.
 
@@ -350,7 +348,7 @@ def train_model(dl_model, x_train, y_train, n_batch, n_epoch):
     return history
 
 
-def save_header():
+def save_dl_header():
     """
     Saves CSV file header to DL_RESULTS_SUMMARY_FILE_NAME file.
 
@@ -367,9 +365,9 @@ def save_header():
                     k_l2, k_l1, a_l2, a_l1\n")
 
 
-def save_results(test_id, n_features, n_layers, n_epoch, n_batch,
-                 regularization, rmse, rmse_epsilon,
-                 pearson, elapsed_time):
+def save_dl_results(test_id, n_features, n_layers, n_epoch, n_batch,
+                    regularization, rmse, rmse_epsilon, pearson,
+                    elapsed_time):
     """
     Saves averaged results of running a deep learning model over k-fold cross
     validation and repeating 'count' times to DL_RESULTS_SUMMARY_FILE_NAME and
@@ -416,157 +414,8 @@ a_l1: {}, RMSE: {}, Epsilon RMSE: {}, Pearson: {}, Elapsed Time: {}"\
         file.write(result_string_for_csv)
 
 
-def accumulate_results_from_folds(y_test_all_folds, prediction_all_folds,
-                                  prediction_epsilon_all_folds, i_fold,
-                                  y_test, prediction, ci_high, ci_low):
-    """
-    Adds results from the current fold to the overall k-fold cross
-    validation results.
-
-    Arguments:
-        y_test_all_folds -- placeholder to store test labels from all folds
-        prediction_all_folds -- placeholder to store prediction labels from all
-            folds
-        prediction_epsilon_all_folds -- placeholder to store epsilon prediction
-            labels from all folds
-        i_fold -- fold index, int
-        y_test - test labels from current fold
-        prediction -- prediction labels from current fold
-        ci_high -- 95% confidence interval high values for the labels from
-            current fold
-        ci_low -- 95% confidence interval low values for the labels from
-            current fold
-
-    Returns:
-        y_test_all_folds -- placeholder to store test labels from all folds
-        prediction_all_folds -- placeholder to store prediction labels from all
-            folds
-        prediction_epsilon_all_folds -- placeholder to store epsilon prediction
-            labels from all folds
-        prediction_epsilon -- epsilon prediction labels from current fold
-    """
-    prediction_epsilon = zeros(len(prediction))
-
-    for index in range(0, len(prediction)):
-        if prediction[index] < ci_low[index]:
-            prediction_epsilon[index] \
-                = y_test[index]-(prediction[index]-ci_low[index])
-        elif prediction[index] > ci_high[index]:
-            prediction_epsilon[index] \
-                = y_test[index]+(ci_high[index]-prediction[index])
-        else:
-            prediction_epsilon[index] = y_test[index]
-
-    if i_fold == 0:
-        y_test_all_folds = y_test[:]
-        prediction_all_folds = prediction[:].tolist()
-        prediction_epsilon_all_folds = prediction_epsilon[:].tolist()
-    else:
-        y_test_all_folds = concatenate([y_test_all_folds, y_test])
-        prediction_all_folds = concatenate(
-            [prediction_all_folds, prediction[:]])
-        prediction_epsilon_all_folds = concatenate(
-            [prediction_epsilon_all_folds, prediction_epsilon[:]])
-
-    return y_test_all_folds, prediction_all_folds,\
-        prediction_epsilon_all_folds, prediction_epsilon
-
-
-def compute_metrics(y_test_normalized, prediction_normalized,
-                    prediction_epsilon_normalized, verbose):
-    """
-    Computes RMSE, Epsilon RMSE and Pearson correlation coefficients.
-
-    Argument:
-        y_test_normalized -- normalized test labels
-        prediction_normalized -- normalized prediction labels
-        prediction_epsilon_normalized -- normalized epsilon prediction labels
-        verbose -- verbose flag
-
-    Returns:
-        rmse -- root mean square value, float
-        rmse_epsilon -- epsilon rmse value, float
-        r_value -- pearson's correlation coefficient'
-        p_value -- 2-tailed p-value
-    """
-    y_test = y_test_normalized * 5
-    prediction = prediction_normalized * 5
-    prediction_epsilon = prediction_epsilon_normalized * 5
-
-    if verbose:
-        print("            y_test Normalized: " +
-              ', '.join(["%.2f" % e for e in y_test_normalized]))
-        print("        Prediction Normalized: " +
-              ', '.join(["%.2f" % e for e in prediction_normalized]))
-        print("Epsilon Prediction Normalized: " +
-              ', '.join(["%.2f" % e for e in prediction_epsilon_normalized]))
-
-    if verbose:
-        print("                       y_test: " +
-              ', '.join(["%.2f" % e for e in y_test]))
-        print("                   Prediction: " +
-              ', '.join(["%.2f" % e for e in prediction]))
-        print("           Epsilon Prediction: " +
-              ', '.join(["%.2f" % e for e in prediction_epsilon]))
-
-    # mse=mean_squared_error(y_test, prediction_from_fold)
-    # rmse https://www.kaggle.com/wiki/RootMeanSquaredError
-
-    rmse = mean_squared_error(y_test, prediction)**0.5
-    rmse_epsilon = mean_squared_error(y_test, prediction_epsilon)**0.5
-
-    # converting to a one dimensional array here
-    prediction = [arr[0] for arr in prediction]
-
-    r_value, p_value = sp.stats.pearsonr(array(y_test), array(prediction))
-
-    print("        RMSE: %.3f" % rmse)
-    print("Epsilon RMSE: %.3f" % rmse_epsilon)
-    print("     Pearson: %.3f" % r_value)
-
-    return rmse, rmse_epsilon, r_value, p_value
-
-
-def compute_results(y_test_all_folds, prediction_all_folds,
-                    prediction_epsilon_all_folds, rmse_all_counts,
-                    rmse_epsilon_all_counts, pearson_all_counts, verbose):
-    """
-    Computes rmse, epsilon rmse and pearson correlation for all folds and
-    stores the result to the placeholders for all counts.
-
-    Args:
-        y_test_all_folds -- test labels from all folds
-        prediction_all_folds -- prediction labels from all folds
-        prediction_epsilon_all_folds -- epsilon prediction labels from all
-            folds
-        rmse_all_counts -- placeholder to store rmse value for all counts
-        rmse_epsilon_all_counts -- placeholder to store epsilon rmse value for
-            all counts
-        pearson_all_counts -- placeholder to store pearson correlation for all
-            counts
-        verbose -- verbose flag
-
-
-    Returns:
-        rmse_all_counts -- placeholder to store rmse value for all counts
-        rmse_epsilon_all_counts -- placeholder to store epsilon rmse value for
-            all counts
-        pearson_all_counts -- placeholder to store pearson correlation for all
-            counts
-    """
-    rmse, rmse_epsilon, r_value, _ = compute_metrics(
-        y_test_all_folds, prediction_all_folds,
-        prediction_epsilon_all_folds, verbose)
-
-    rmse_all_counts.append(rmse)
-    rmse_epsilon_all_counts.append(rmse_epsilon)
-    pearson_all_counts.append(r_value)
-
-    return rmse_all_counts, rmse_epsilon_all_counts, pearson_all_counts
-
-
-def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
-              n_layers, n_epoch, n_batch, regularization, verbose):
+def run_dl_model(attributes, labels, test_id, dl_model, count, k, n_features,
+                 n_layers, n_epoch, n_batch, regularization, verbose):
     """
     Runs deep learning model for given attributes/labels using the given
     hyperparameters and logs the results to files and stdout.
@@ -591,7 +440,7 @@ def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
     """
     start_time = time.time()
 
-    log_hyperparameters(
+    log_dl_hyperparameters(
         test_id, n_features, n_layers, n_epoch, n_batch, regularization)
 
     rmse_all_counts = []
@@ -599,7 +448,7 @@ def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
     pearson_all_counts = []
 
     if dl_model is None:
-        dl_model = create_model(n_layers, n_features, regularization)
+        dl_model = create_dl_model(n_layers, n_features, regularization)
 
     model_weights = dl_model.get_weights()
 
@@ -626,7 +475,7 @@ def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
 
             dl_model.set_weights(model_weights)
 
-            train_model(dl_model, x_train, y_train, n_batch, n_epoch)
+            train_dl_model(dl_model, x_train, y_train, n_batch, n_epoch)
 
             prediction = dl_model.predict(x_test)
 
@@ -646,13 +495,13 @@ def run_model(attributes, labels, test_id, dl_model, count, k, n_features,
         print("\nMetrics for count: " + str(count))
 
         rmse_all_counts, rmse_epsilon_all_counts, pearson_all_counts \
-            = compute_results(y_test_all_folds, prediction_all_folds,
-                              prediction_epsilon_all_folds, rmse_all_counts,
-                              rmse_epsilon_all_counts, pearson_all_counts,
-                              verbose)
+            = compute_and_accumulate_results_from_counts(
+                    y_test_all_folds, prediction_all_folds,
+                    prediction_epsilon_all_folds, rmse_all_counts,
+                    rmse_epsilon_all_counts, pearson_all_counts, verbose)
 
     elapsed_time = time.strftime("%H:%M:%S",
                                  time.gmtime(time.time()-start_time))
-    save_results(test_id, n_features, n_layers, n_epoch, n_batch,
-                 regularization, rmse_all_counts, rmse_epsilon_all_counts,
-                 pearson_all_counts, elapsed_time)
+    save_dl_results(test_id, n_features, n_layers, n_epoch, n_batch,
+                    regularization, rmse_all_counts, rmse_epsilon_all_counts,
+                    pearson_all_counts, elapsed_time)

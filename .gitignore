@@ -1,6 +1,7 @@
-__pycache__/
-deep_learning/__pycache__/
 .idea/
-dataset_utils.pyc
 dl_details.txt
 dl_summary.csv
+filename.pkl
+rf_details.txt
+rf_summary.csv
+*.pyc
