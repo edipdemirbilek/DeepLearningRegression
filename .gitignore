@@ -4,3 +4,4 @@ dl_summary.csv
 filename.pkl
 rf_details.txt
 rf_summary.csv
+*.pyc
