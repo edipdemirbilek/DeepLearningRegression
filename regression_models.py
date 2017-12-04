@@ -195,13 +195,13 @@ def main():
                 test_id = str(i)+str(rand())
 
                 n_features = args.n_features if args.n_features else \
-                    random.randint(1, 125)
+                    int(power(2, 7 * uniform(0, 0.995112040666012)))
 
                 n_layer = args.n_layer if args.n_layer else \
-                    random.randint(1, 20)
+                    int(power(2, 5 * uniform(0, 1.0)))
 
                 n_epoch = args.n_epoch if args.n_epoch else \
-                    int(power(2, 14 * uniform(0, 1.0)))
+                    int(power(2, 14 * uniform(0.617418299269623, 1.0)))
 
                 dropout = args.dropout if args.dropout else \
                     random.choice([True, False])
