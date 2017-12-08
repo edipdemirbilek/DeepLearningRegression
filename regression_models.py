@@ -5,8 +5,8 @@
 Multimedia Audiovisual Quality Models.
 
 This module includes multimedia audiovisual quality models based on
-Deep Learning and Deceision Trees Ensamble MODELS developed using the
-Parametric and Bitstream version of the  INRS Audiovisual Quality Dataset.
+Deep Learning and Deceision Trees Ensamble MODELS developed using Bitstream
+version of the  INRS Audiovisual Quality Dataset.
 
 Module reads model type (Deep Learning or Decision Trees based ensamble
 methods) and is capable of conductiong the random hyperparameter search for
@@ -30,36 +30,8 @@ Usage Examples:
             of parameters and operations available.
 
 Attributes:
-    Common:
-        verbose -- Verbose, default: disabled, optional
-        m_type -- Model type, string, options: 'dl', 'rf' or 'bg', required
-        random --  Random hyperparameter search, default: disabled, optional
-        model_id -- Custom model id, int, default: 1, optional
-        n_models -- Max number of models, int, default: 500, optional
-        k -- Cross validation k-fold value, int, default: 4, optional
-        n_features -- Number of features, int, default: 125, optional
-        count -- Repeat k-fold cross validation # times, int, default: 3,
-            optional
-
-    Deep Learning: , only for random search
-        n_layer -- Max number of hidden layers, int, default: random(1, 20),
-            optional
-        n_epoch -- Max number of epochs, int, default: random(512,2^14),
-            optional
-        n_batch -- Batch size, int, default: 120, optional
-        dropout -- Dropout, default: random(True, False), optional
-        k_l2 -- Kernel L2 regularization, default: False, optional
-        k_l1 -- Kernel L1 regularization, default: True, optional
-        a_l2 -- Activation L2 regularization, default: False, optional
-        a_l1 -- Activation L1 regularization, default: False, optional
-
-    Random Forests:
-
-Todo:
-    * Decision Trees based Ensamble Methods
-    * Complete Docstrings
+    check parser_util.py for available options
 """
-
 import random
 
 from numpy import power
@@ -68,7 +40,8 @@ from numpy.random import rand, uniform
 from utils.dataset_util import load_dataset
 from utils.dl_util import pack_regularization_object, \
     create_dl_model, run_dl_model, save_dl_header
-from utils.rf_util import create_rf_model, run_rf_model, save_rf_header
+from utils.rf_util import create_rf_model, run_rf_model, save_rf_header, \
+    pack_rf_conf_object
 from utils.parser_util import build_parser
 from models.dl_models import dl_model_1, dl_model_2, dl_model_3, \
     dl_model_4, dl_model_5, dl_model_6, dl_model_7, dl_model_8, dl_model_9, \
@@ -192,15 +165,75 @@ def process_rf_random_model(args, attributes, labels):
         n_trees = args.n_trees if args.n_trees else \
             int(power(2, 11 * uniform(0, 1.0)))
 
-        max_depth = args.max_depth if args.max_depth else None
-        max_features = args.max_features if args.max_features else \
-            "auto"
+        criterion = args.criterion if args.criterion else \
+            random.choice(['mse', 'mae'])
 
-        rf_model = create_rf_model(n_trees, max_depth, max_features)
+        max_features = args.max_features if args.max_features else \
+            random.choice(['int', 'float', 'auto', 'sqrt', 'log2', 'None'])
+        if max_features == 'int':
+            max_features = random.randint(1, n_features)
+        elif max_features == 'float':
+            max_features = uniform(0, 1.0)
+        elif max_features == 'None':
+            max_features = None
+
+        max_depth = args.max_depth if args.max_depth else \
+            random.choice(['int', 'None'])
+        if max_depth == 'int':
+            max_depth = random.randint(1, n_features)
+        else:
+            max_depth = None
+
+        min_samples_split = args.min_samples_split if args.min_samples_split \
+            else random.choice(['int', 'float'])
+        if min_samples_split == 'int':
+            min_samples_split = random.randint(2, 120)
+        else:
+            min_samples_split = uniform(0.0, 1.0)
+
+        min_samples_leaf = args.min_samples_leaf if args.min_samples_leaf \
+            else random.choice(['int', 'float'])
+        if min_samples_leaf == 'int':
+            min_samples_leaf = random.randint(1, 120)
+        else:
+            min_samples_leaf = uniform(0, 0.5)
+
+        min_weight_fraction_leaf = args.min_weight_fraction_leaf if \
+            args.min_weight_fraction_leaf else uniform(0, 0.5)
+
+        max_leaf_nodes = args.max_leaf_nodes if args.max_leaf_nodes else \
+            random.choice(['int', 'None'])
+        if max_leaf_nodes == 'int':
+            max_leaf_nodes = random.randint(1, n_features)
+        else:
+            max_leaf_nodes = None
+
+        min_impurity_decrease = args.min_impurity_decrease if \
+            args.min_impurity_decrease else uniform(0, 1.0)
+
+        bootstrap = args.bootstrap if args.bootstrap else \
+            random.choice([True, False])
+
+        oob_score = args.oob_score if args.oob_score else \
+            random.choice([True, False])
+        if oob_score:
+            bootstrap = True
+
+        n_jobs = args.n_jobs if args.n_jobs else random.choice([-1, 1])
+
+        warm_start = args.warm_start if args.warm_start else False
+
+        rf_conf_object = \
+            pack_rf_conf_object(n_trees, criterion, max_features, max_depth,
+                                min_samples_split, min_samples_leaf,
+                                min_weight_fraction_leaf, max_leaf_nodes,
+                                min_impurity_decrease, bootstrap, oob_score,
+                                n_jobs, warm_start, random_state=None)
+
+        rf_model = create_rf_model(rf_conf_object)
 
         run_rf_model(attributes, labels, test_id, rf_model, args.count,
-                     args.k, n_features, n_trees, max_depth,
-                     max_features, verbose=args.verbose)
+                     args.k, n_features, rf_conf_object, verbose=args.verbose)
 
 
 def main():
