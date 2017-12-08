@@ -204,7 +204,7 @@ def process_rf_random_model(args, attributes, labels):
         max_leaf_nodes = args.max_leaf_nodes if args.max_leaf_nodes else \
             random.choice(['int', 'None'])
         if max_leaf_nodes == 'int':
-            max_leaf_nodes = random.randint(1, n_features)
+            max_leaf_nodes = random.randint(2, n_features)
         else:
             max_leaf_nodes = None
 
