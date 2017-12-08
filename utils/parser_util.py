@@ -92,29 +92,49 @@ def add_rf_parser_arguments(parser):
     Returns:
         parser -- ArgumentParser with rf arguments
     """
-    parser.add_argument('--n_trees', type=int,
-                        default=None, choices=["1 - 200"],
+    parser.add_argument('--n_trees', type=int, default=None,
                         help="number of trees in the forest")
+    parser.add_argument('--criterion', default=None, choices=['mse', 'mae'],
+                        help="function to measure the quality of a split")
     parser.add_argument('--max_features',
                         default=None, choices=['int', 'float', "auto", "sqrt",
                                                "log2", "None"],
                         help="number of features to consider when looking for \
                             the best split")
-    parser.add_argument('--max_depth', default=None,
-                        choices=['int', "None"],
+    parser.add_argument('--max_depth', default=None, choices=['int', 'None'],
                         help="maximum depth of the tree")
-    # criterion
-    # min_samples_split
-    # min_samples_leaf
-    # min_weight_fraction_leaf
-    # max_leaf_nodes
-    # min_impurity_split
-    # min_impurity_decrease
-    # bootstrap
-    # oob_score
-    # n_jobs
-    # random_state
-    # warm_start
+    parser.add_argument('--min_samples_split', choices=['int', 'float'],
+                        default=None,
+                        help="minimum number of samples required to split an \
+                        internal node")
+    parser.add_argument('--min_samples_leaf', choices=['int', 'float'],
+                        default=None,
+                        help="minimum number of samples required to be at a \
+                        leaf node")
+    parser.add_argument('--min_weight_fraction_leaf', type=float,
+                        default=None, help="minimum weighted fraction")
+    parser.add_argument('--max_leaf_nodes', choices=['int', 'None'],
+                        default=None,
+                        help="grow trees with max_leaf_nodes in best-first \
+                        fashion")
+    parser.add_argument('--min_impurity_decrease', type=float,
+                        default=None, help="A node will be split if this split \
+                        induces a decrease of the impurity greater than or \
+                        equal to this value")
+    parser.add_argument('--bootstrap', type=bool,
+                        default=None, help="whether bootstrap samples are used \
+                        when building trees")
+    parser.add_argument('--oob_score', type=bool, default=None,
+                        help='whether to use out-of-bag samples to estimate \
+                        the R^2 on unseen data')
+    parser.add_argument('--n_jobs', type=int, default=None,
+                        help='the number of jobs to run in parallel for both \
+                        fit and predict. If -1, then the number of jobs is set\
+                         to the number of cores')
+    parser.add_argument('--warm_start', type=bool, default=None,
+                        help='when set to True, reuse the solution of the \
+                        previous call to fit and add more estimators to the \
+                        ensemble, otherwise, just fit a whole new forest')
 
 
 def build_parser():

@@ -1,8 +1,5 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Dec  1 20:56:25 2017
-
 @author: edip.demirbilek
 """
 from numpy import array, zeros, concatenate

@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+@author: edip.demirbilek
+"""
 import time
 import os
 
@@ -16,6 +20,93 @@ from utils.common_util import accumulate_results_from_folds, compute_metrics, \
 # File Names
 RF_RESULTS_DETAILS_FILE_NAME = "rf_details.txt"
 RF_RESULTS_SUMMARY_FILE_NAME = "rf_summary.csv"
+
+
+def pack_rf_conf_object(n_trees, criterion, max_features, max_depth,
+                        min_samples_split, min_samples_leaf,
+                        min_weight_fraction_leaf, max_leaf_nodes,
+                        min_impurity_decrease, bootstrap, oob_score, n_jobs,
+                        warm_start, random_state):
+    """
+    Packs rf configuration object.
+    """
+    rf_conf_object = {}
+    rf_conf_object["n_trees"] = n_trees
+    rf_conf_object["criterion"] = criterion
+    rf_conf_object["max_features"] = max_features
+    rf_conf_object["max_depth"] = max_depth
+    rf_conf_object["min_samples_split"] = min_samples_split
+    rf_conf_object["min_samples_leaf"] = min_samples_leaf
+    rf_conf_object["min_weight_fraction_leaf"] = min_weight_fraction_leaf
+    rf_conf_object["max_leaf_nodes"] = max_leaf_nodes
+    rf_conf_object["min_impurity_decrease"] = min_impurity_decrease
+    rf_conf_object["bootstrap"] = bootstrap
+    rf_conf_object["oob_score"] = oob_score
+    rf_conf_object["n_jobs"] = n_jobs
+    rf_conf_object["warm_start"] = warm_start
+    rf_conf_object["random_state"] = random_state
+
+    return rf_conf_object
+
+
+def unpack_rf_conf_object(rf_conf_object):
+    """
+    Unpacks rf configuration object.
+    """
+    n_trees = rf_conf_object["n_trees"]
+    criterion = rf_conf_object["criterion"]
+    max_features = rf_conf_object["max_features"]
+    max_depth = rf_conf_object["max_depth"]
+    min_samples_split = rf_conf_object["min_samples_split"]
+    min_samples_leaf = rf_conf_object["min_samples_leaf"]
+    min_weight_fraction_leaf = rf_conf_object["min_weight_fraction_leaf"]
+    max_leaf_nodes = rf_conf_object["max_leaf_nodes"]
+    min_impurity_decrease = rf_conf_object["min_impurity_decrease"]
+    bootstrap = rf_conf_object["bootstrap"]
+    oob_score = rf_conf_object["oob_score"]
+    n_jobs = rf_conf_object["n_jobs"]
+    warm_start = rf_conf_object["warm_start"]
+    random_state = rf_conf_object["random_state"]
+
+    return n_trees, criterion, max_features, max_depth, min_samples_split, \
+        min_samples_leaf, min_weight_fraction_leaf, max_leaf_nodes, \
+        min_impurity_decrease, bootstrap, oob_score, n_jobs, warm_start, \
+        random_state
+
+
+def log_rf_hyperparameters(test_id, n_features, rf_conf_object):
+    """
+    Logs model's hyperparameters to DL_RESULTS_DETAILS_FILE_NAME file and
+    stdout.
+
+    Arguments:
+        test_id -- test id, string
+        n_features -- number of features, int
+        rf_conf_object -- random forest conf parameters
+
+    Returns:
+        None
+    """
+    n_trees, criterion, max_features, max_depth, min_samples_split, \
+        min_samples_leaf, min_weight_fraction_leaf, max_leaf_nodes, \
+        min_impurity_decrease, bootstrap, oob_score, n_jobs, warm_start, \
+        random_state = unpack_rf_conf_object(rf_conf_object)
+
+    log_string \
+        = "\nTest Id: {}, Num Features: {}, Num Trees : {}, Criterion : {}, \
+        Max Features: {}, Max Depth : {}, Min Samples Split : {}, \
+        Min Samples Leaf : {}, Min Weight Fraction Leaf : {}, \
+        Max Leaf Nodes : {}, Min Impurity Decrease : {}, Bootstrap : {}, \
+        Oob Score: {}, Num Jobs : {}, Warm Start : {}, Random State : {},"\
+        .format(test_id, n_features, n_trees, criterion, max_features,
+                max_depth, min_samples_split, min_samples_leaf,
+                min_weight_fraction_leaf, max_leaf_nodes,
+                min_impurity_decrease, bootstrap, oob_score, n_jobs,
+                warm_start, random_state)
+    print(log_string)
+
+    with open(RF_RESULTS_DETAILS_FILE_NAME, "a") as file:
+        file.write(log_string)
 
 
 def save_rf_header():
@@ -72,7 +163,7 @@ def save_rf_results(test_id, n_features, n_trees, max_depth, max_features,
         file.write(result_string_for_csv)
 
 
-def create_rf_model(n_trees, max_depth, max_features):
+def create_rf_model(rf_conf_object):
     """
     Creates a random forests model using settings provided.
 
@@ -84,9 +175,22 @@ def create_rf_model(n_trees, max_depth, max_features):
     Returns:
         rf_model -- deep learning model
     """
-    rf_model = RandomForestRegressor(n_estimators=n_trees, max_depth=max_depth,
-                                     max_features=max_features,
-                                     random_state=None)
+    n_trees, criterion, max_features, max_depth, min_samples_split, \
+        min_samples_leaf, min_weight_fraction_leaf, max_leaf_nodes, \
+        min_impurity_decrease, bootstrap, oob_score, n_jobs, warm_start, \
+        random_state = unpack_rf_conf_object(rf_conf_object)
+
+    rf_model = \
+        RandomForestRegressor(n_estimators=n_trees, max_features=max_features,
+                              max_depth=max_depth,
+                              min_samples_split=min_samples_split,
+                              min_samples_leaf=min_samples_leaf,
+                              min_weight_fraction_leaf=min_weight_fraction_leaf,
+                              max_leaf_nodes=max_leaf_nodes,
+                              min_impurity_decrease=min_impurity_decrease,
+                              bootstrap=bootstrap, oob_score=oob_score,
+                              n_jobs=n_jobs, random_state=random_state,
+                              warm_start=warm_start)
 
     return rf_model
 
@@ -110,12 +214,15 @@ def train_rf_model(rf_model, x_train, y_train):
 
 
 def run_rf_model(attributes, labels, test_id, rf_model, count, k, n_features,
-                 n_trees, max_depth, max_features, verbose):
+                 rf_conf_object, verbose):
 
     start_time = time.time()
+    n_trees, criterion, max_features, max_depth, min_samples_split, \
+        min_samples_leaf, min_weight_fraction_leaf, max_leaf_nodes, \
+        min_impurity_decrease, bootstrap, oob_score, n_jobs, warm_start, \
+        random_state = unpack_rf_conf_object(rf_conf_object)
 
-#    log_hyperparameters(
-#        test_id, n_features, n_layers, n_epoch, n_batch, regularization)
+    log_rf_hyperparameters(test_id, n_features, rf_conf_object)
 
     rmse_all_counts = []
     rmse_epsilon_all_counts = []
