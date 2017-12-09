@@ -34,15 +34,16 @@ Attributes:
 """
 import random
 
-from numpy import power
+from numpy import power, asarray, concatenate
 from numpy.random import rand, uniform
+
+from sklearn.decomposition import PCA
 
 from utils.dataset_util import load_dataset
 from utils.dl_util import pack_regularization_object, \
     create_dl_model, run_dl_model, save_dl_header
 from utils.rf_util import create_rf_model, run_rf_model, save_rf_header, \
     pack_rf_conf_object
-from utils.pca_util import generate_pca_features
 from utils.parser_util import build_parser
 from models.dl_models import dl_model_1, dl_model_2, dl_model_3, \
     dl_model_4, dl_model_5, dl_model_6, dl_model_7, dl_model_8, dl_model_9, \
@@ -238,25 +239,47 @@ def process_rf_random_model(args, attributes, labels):
                      args.k, n_features, rf_conf_object, verbose=args.verbose)
 
 
-def process_pca(args, attributes, labels):
-    """
-    To extract features using PCA.
+def prepare_data_for_pca(attributes, labels):
+    # list(160x127) -> matrix(160x127)
+    attributes_as_array = asarray(attributes)
+    print(attributes_as_array.shape)
 
-    Arguments:
-        args -- a number of arguments. See top level dostrings for
-            detailed options available.
-        attributes -- training/test data
-        labels -- training/test labels
+    # matrix(160x2), confidence intervals in last two columns
+    ci_as_array = attributes_as_array[:, 125:]
+    print(ci_as_array.shape)
 
-    Returns:
-        None
+    # list(160,) -> matrix(160,)
+    labels_as_array = asarray(labels)
+    # matrix(160x1)
+    labels_as_array = labels_as_array.reshape(labels_as_array.shape[0], 1)
+    print(labels_as_array.shape)
 
-    Raises:
-        None
-    """
-    n_features = args.n_features if args.n_features else 125
+    ci_labels_as_array = concatenate((ci_as_array, labels_as_array), axis=1)
+    print(ci_labels_as_array.shape)
 
-    generate_pca_features(attributes, labels, n_features)
+    # last two columns are confidence intervals (160x125)
+    attributes_as_array = attributes_as_array[:, 0:125]
+    print(attributes_as_array.shape)
+    return attributes_as_array, ci_labels_as_array
+
+
+def process_pca(args, attributes, labels, n_features=2):
+
+    attributes_as_array, ci_labels_as_array = \
+        prepare_data_for_pca(attributes, labels)
+
+    pca = PCA(n_components=n_features)
+
+    # 160 x n_features
+    attributes_new = pca.fit_transform(attributes_as_array)
+    print(attributes_new.shape)
+
+    attributes_ci_labels_as_array = \
+        concatenate((attributes_new, ci_labels_as_array), axis=1)
+    print(attributes_ci_labels_as_array.shape)
+    print(attributes_ci_labels_as_array)
+
+    return attributes_ci_labels_as_array
 
 
 def main():

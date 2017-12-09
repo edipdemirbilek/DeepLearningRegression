@@ -2,10 +2,13 @@
 """
 @author: edip.demirbilek
 
-Deep Learning Util.
+Dataset Utils..
 
-This module allow us to create/train/test and log evrything about Deep Learning
-based models.
+This module allow us to read the Parametric and Bitstream version of the  INRS
+Audiovisual Quality Dataset from file system.
+
+Todo:
+    * Read parametric version of the INRS Audiovisual Quality Dataset.
 """
 import random
 import time

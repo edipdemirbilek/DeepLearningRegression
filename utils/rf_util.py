@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 @author: edip.demirbilek
-
-Random Forest Util.
-
-This module allow us to create/train/test and log evrything about Random
-Forests based ensamble models.
 """
 import time
 import os
