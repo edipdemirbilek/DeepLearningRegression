@@ -34,8 +34,10 @@ Attributes:
 """
 import random
 
-from numpy import power
+from numpy import power, asarray, concatenate
 from numpy.random import rand, uniform
+
+from sklearn.decomposition import PCA
 
 from utils.dataset_util import load_dataset
 from utils.dl_util import pack_regularization_object, \
@@ -237,6 +239,49 @@ def process_rf_random_model(args, attributes, labels):
                      args.k, n_features, rf_conf_object, verbose=args.verbose)
 
 
+def prepare_data_for_pca(attributes, labels):
+    # list(160x127) -> matrix(160x127)
+    attributes_as_array = asarray(attributes)
+    print(attributes_as_array.shape)
+
+    # matrix(160x2), confidence intervals in last two columns
+    ci_as_array = attributes_as_array[:, 125:]
+    print(ci_as_array.shape)
+
+    # list(160,) -> matrix(160,)
+    labels_as_array = asarray(labels)
+    # matrix(160x1)
+    labels_as_array = labels_as_array.reshape(labels_as_array.shape[0], 1)
+    print(labels_as_array.shape)
+
+    ci_labels_as_array = concatenate((ci_as_array, labels_as_array), axis=1)
+    print(ci_labels_as_array.shape)
+
+    # last two columns are confidence intervals (160x125)
+    attributes_as_array = attributes_as_array[:, 0:125]
+    print(attributes_as_array.shape)
+    return attributes_as_array, ci_labels_as_array
+
+
+def process_pca(args, attributes, labels, n_features=2):
+
+    attributes_as_array, ci_labels_as_array = \
+        prepare_data_for_pca(attributes, labels)
+
+    pca = PCA(n_components=n_features)
+
+    # 160 x n_features
+    attributes_new = pca.fit_transform(attributes_as_array)
+    print(attributes_new.shape)
+
+    attributes_ci_labels_as_array = \
+        concatenate((attributes_new, ci_labels_as_array), axis=1)
+    print(attributes_ci_labels_as_array.shape)
+    print(attributes_ci_labels_as_array)
+
+    return attributes_ci_labels_as_array
+
+
 def main():
     """
     Main function parses input arguments and creates and runs random/custom
@@ -270,6 +315,9 @@ def main():
 
         if args.random:
             process_rf_random_model(args, attributes, labels)
+
+    elif args.m_type == "pca":
+        process_pca(args, attributes, labels)
 
 
 if __name__ == '__main__':

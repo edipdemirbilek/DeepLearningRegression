@@ -26,7 +26,7 @@ def build_common_parser():
                         help='increase output verbosity',
                         action="store_true")
     parser.add_argument('--m_type', required=True,
-                        choices=['dl', 'rf', 'bg'],
+                        choices=['dl', 'rf', 'pca'],
                         help='model type: deep learning, random forests or \
                         bagging')
     parser.add_argument('--random', action="store_true", help="random search \
