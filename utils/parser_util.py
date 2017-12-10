@@ -38,12 +38,14 @@ def build_common_parser():
                         search over hyperparameters")
     parser.add_argument('--k', type=int, default=4,
                         help="cross validation k-fold value")
-    parser.add_argument('--n_features', type=int, choices=["1 - 125"],
+    parser.add_argument('--n_features', type=int, choices=range(1, 126),
                         default=None,
                         help="number of features")
     parser.add_argument('--count', type=int, default=3,
                         help="repeat 'count' times k-fold cross validation on \
                         the same model")
+    parser.add_argument('--f_type', choices=['sorted', 'pca'], default='pca',
+                        help='features to use: sorted, pca')
     return parser
 
 
