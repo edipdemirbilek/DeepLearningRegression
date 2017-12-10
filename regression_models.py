@@ -49,7 +49,7 @@ from models.dl_models import dl_model_1, dl_model_2, dl_model_3, \
     dl_model_10
 
 
-def process_dl_random_model(args, attributes, labels):
+def process_dl_random_model(args):
     """
     Deep Learning Random Search Hyperparameter exploration parses input
     arguments and creates and runs random models.
@@ -57,8 +57,6 @@ def process_dl_random_model(args, attributes, labels):
     Arguments:
         args -- a number of arguments. See top level dostrings for
             detailed options available.
-        attributes -- training/test data
-        labels -- training/test labels
 
     Returns:
         None
@@ -71,6 +69,8 @@ def process_dl_random_model(args, attributes, labels):
 
         n_features = args.n_features if args.n_features else \
             int(power(2, 7 * uniform(0, 0.995112040666012)))
+
+        attributes, labels = load_dataset(args.f_type, n_features)
 
         n_layer = args.n_layer if args.n_layer else \
             int(power(2, 5 * uniform(0, 1.0)))
@@ -99,7 +99,7 @@ def process_dl_random_model(args, attributes, labels):
                      verbose=args.verbose)
 
 
-def process_dl_custom_model(args, attributes, labels):
+def process_dl_custom_model(args):
     """
     Parses input arguments and creates and runs custom deep learning based
     models.
@@ -107,8 +107,6 @@ def process_dl_custom_model(args, attributes, labels):
     Arguments:
         args -- a number of arguments. See top level dostrings for
             detailed options available.
-        attributes -- training/test data
-        labels -- training/test labels
 
     Returns:
         None
@@ -132,6 +130,8 @@ def process_dl_custom_model(args, attributes, labels):
 
     n_features = args.n_features if args.n_features else 125
 
+    attributes, labels = load_dataset("sorped")
+
     dl_model, n_layers, n_epoch, n_batch_size, regularization \
         = custom_dl_models[args.model_id](n_features)
     run_dl_model(
@@ -140,7 +140,7 @@ def process_dl_custom_model(args, attributes, labels):
         regularization, verbose=args.verbose)
 
 
-def process_rf_random_model(args, attributes, labels):
+def process_rf_random_model(args):
     """
     Random Forests Random Search Hyperparameter exploration parses input
     arguments and creates and runs random models.
@@ -148,8 +148,6 @@ def process_rf_random_model(args, attributes, labels):
     Arguments:
         args -- a number of arguments. See top level dostrings for
             detailed options available.
-        attributes -- training/test data
-        labels -- training/test labels
 
     Returns:
         None
@@ -162,6 +160,8 @@ def process_rf_random_model(args, attributes, labels):
 
         n_features = args.n_features if args.n_features else \
             random.randint(1, 125)
+
+        attributes, labels = load_dataset("sorted")
 
         n_trees = args.n_trees if args.n_trees else \
             int(power(2, 11 * uniform(0, 1.0)))
@@ -238,15 +238,13 @@ def process_rf_random_model(args, attributes, labels):
                      args.k, n_features, rf_conf_object, verbose=args.verbose)
 
 
-def process_pca(args, attributes, labels):
+def process_pca(args):
     """
     To extract features using PCA.
 
     Arguments:
         args -- a number of arguments. See top level dostrings for
             detailed options available.
-        attributes -- training/test data
-        labels -- training/test labels
 
     Returns:
         None
@@ -255,6 +253,8 @@ def process_pca(args, attributes, labels):
         None
     """
     n_features = args.n_features if args.n_features else 125
+
+    attributes, labels = load_dataset("sorted")
 
     generate_pca_features(attributes, labels, n_features)
 
@@ -277,24 +277,22 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
 
-    attributes, labels = load_dataset()
-
     if args.m_type == "dl":
         save_dl_header()
 
         if args.random:
-            process_dl_random_model(args, attributes, labels)
+            process_dl_random_model(args)
         else:
-            process_dl_custom_model(args, attributes, labels)
+            process_dl_custom_model(args)
 
     elif args.m_type == "rf":
         save_rf_header()
 
         if args.random:
-            process_rf_random_model(args, attributes, labels)
+            process_rf_random_model(args)
 
     elif args.m_type == "pca":
-        process_pca(args, attributes, labels)
+        process_pca(args)
 
 
 if __name__ == '__main__':

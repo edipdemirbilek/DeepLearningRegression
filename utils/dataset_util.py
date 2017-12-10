@@ -13,7 +13,8 @@ Todo:
 import random
 from numpy import array, asarray
 
-DATASET_FILE_NAME = "dataset/bitstream_dataset_columns_sorted.csv"
+SORTED_DATASET_FILE_NAME = "dataset/bitstream_dataset_columns_sorted.csv"
+PCA_FEATURES_FILE_PREFIX = "./pca_features/pca_"
 
 
 def pack_partitioned_data(x_train, x_test, y_train, y_test, ci_high, ci_low):
@@ -90,13 +91,14 @@ def unpack_partitioned_data(partitioned_data):
     return x_train, x_test, y_train, y_test, ci_high, ci_low
 
 
-def load_dataset():
+def load_dataset(f_type, n_features):
     """
     Reads and shuffles dataset from file DATASET_FILE_NAME and returns
     attributes(data) and labels.
 
     Arguments:
-        None
+        f_type -- type of features to load. rf sorted vs pca extarcted
+        n_features -- number of features, only is f_type=pca
 
     Returns:
         attributes -- Attributes(data), list of size data_size x n_featurees
@@ -106,7 +108,13 @@ def load_dataset():
     attributes_tmp = []
     first_row = True
 
-    with open(DATASET_FILE_NAME) as file:
+    file_name = SORTED_DATASET_FILE_NAME
+    if(f_type == "pca"):
+        file_name = PCA_FEATURES_FILE_PREFIX+str(n_features)+".csv"
+
+    print("Reading from file: "+file_name)
+
+    with open(file_name) as file:
         for line in file:
             # split on comma
             row = line.strip().split(",")
