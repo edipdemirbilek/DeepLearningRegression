@@ -13,8 +13,10 @@ Todo:
 import random
 from numpy import array, asarray
 
-SORTED_DATASET_FILE_NAME = "dataset/bitstream_dataset_columns_sorted.csv"
-PCA_FEATURES_FILE_PREFIX = "./pca_features/pca_"
+SORTED_DATASET_FILE_NAME = \
+    "./dataset/rf_sorted/bitstream_dataset_columns_sorted.csv"
+PCA_FEATURES_FILE_PREFIX = \
+    "./dataset/pca_extracted/pca_"
 
 
 def pack_partitioned_data(x_train, x_test, y_train, y_test, ci_high, ci_low):

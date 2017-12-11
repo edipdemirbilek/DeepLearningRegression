@@ -12,7 +12,7 @@ from sklearn.decomposition import PCA
 import pandas as pd
 
 # File Names
-PCA_FEATURES_FILE_PREFIX = "./pca_features/pca_"
+PCA_FEATURES_FILE_PREFIX = "./dataset/pca_extracted/pca_"
 
 
 def prepare_data_for_pca(attributes, labels):
