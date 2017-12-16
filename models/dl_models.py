@@ -15,7 +15,7 @@ from keras.layers.core import Dense
 from keras.optimizers import Adadelta
 from keras import regularizers
 
-from utils.dl_util import pack_regularization_object
+from utils.dl_util import pack_regularization
 
 
 def add_output_layer_and_compile(dl_model):
@@ -86,7 +86,7 @@ def dl_model_1(n_features):
     k_l1 = True
     a_l2 = False
     a_l1 = False
-    regularization = pack_regularization_object(
+    regularization = pack_regularization(
         dropout, k_l2, k_l1, a_l2, a_l1)
 
     dl_model = Sequential()
@@ -164,7 +164,7 @@ def dl_model_2(n_features):
     k_l1 = True
     a_l2 = False
     a_l1 = False
-    regularization = pack_regularization_object(
+    regularization = pack_regularization(
         dropout, k_l2, k_l1, a_l2, a_l1)
 
     dl_model = Sequential()
@@ -233,7 +233,7 @@ def dl_model_3(n_features):
     k_l1 = True
     a_l2 = False
     a_l1 = False
-    regularization = pack_regularization_object(
+    regularization = pack_regularization(
         dropout, k_l2, k_l1, a_l2, a_l1)
 
     dl_model = Sequential()
@@ -304,7 +304,7 @@ def dl_model_4(n_features):
     k_l1 = True
     a_l2 = False
     a_l1 = False
-    regularization = pack_regularization_object(
+    regularization = pack_regularization(
         dropout, k_l2, k_l1, a_l2, a_l1)
 
     dl_model = Sequential()
@@ -390,7 +390,7 @@ def dl_model_5(n_features):
     k_l1 = True
     a_l2 = False
     a_l1 = False
-    regularization = pack_regularization_object(
+    regularization = pack_regularization(
         dropout, k_l2, k_l1, a_l2, a_l1)
 
     dl_model = Sequential()
@@ -467,7 +467,7 @@ def dl_model_6(n_features):
     k_l1 = True
     a_l2 = False
     a_l1 = False
-    regularization = pack_regularization_object(
+    regularization = pack_regularization(
         dropout, k_l2, k_l1, a_l2, a_l1)
 
     dl_model = Sequential()
@@ -538,7 +538,7 @@ def dl_model_7(n_features):
     k_l1 = True
     a_l2 = False
     a_l1 = False
-    regularization = pack_regularization_object(
+    regularization = pack_regularization(
         dropout, k_l2, k_l1, a_l2, a_l1)
 
     dl_model = Sequential()
@@ -605,7 +605,7 @@ def dl_model_8(n_features):
     k_l1 = True
     a_l2 = False
     a_l1 = False
-    regularization = pack_regularization_object(
+    regularization = pack_regularization(
         dropout, k_l2, k_l1, a_l2, a_l1)
 
     dl_model = Sequential()
@@ -669,7 +669,7 @@ def dl_model_9(n_features):
     k_l1 = False
     a_l2 = False
     a_l1 = False
-    regularization = pack_regularization_object(
+    regularization = pack_regularization(
         dropout, k_l2, k_l1, a_l2, a_l1)
 
     dl_model = Sequential()
@@ -733,7 +733,7 @@ def dl_model_10(n_features):
     k_l1 = False
     a_l2 = False
     a_l1 = False
-    regularization = pack_regularization_object(
+    regularization = pack_regularization(
         dropout, k_l2, k_l1, a_l2, a_l1)
 
     dl_model = Sequential()

@@ -12,6 +12,7 @@ import time
 import os
 
 from statistics import mean
+import math
 
 from numpy import power
 from numpy.random import uniform
@@ -21,7 +22,6 @@ from sklearn.model_selection import KFold
 from keras.models import Sequential
 from keras.layers.core import Dense
 from keras.layers import Dropout
-from keras.optimizers import Adadelta
 from keras import regularizers
 
 from utils.dataset_util import prepare_data, unpack_partitioned_data
@@ -33,7 +33,7 @@ DL_RESULTS_DETAILS_FILE_NAME = "dl_details.txt"
 DL_RESULTS_SUMMARY_FILE_NAME = "dl_summary.csv"
 
 
-def pack_regularization_object(dropout, k_l2, k_l1, a_l2, a_l1):
+def pack_regularization(dropout, k_l2, k_l1, a_l2, a_l1):
     """
     Packs dropout, kernel and activation regularization settings.
 
@@ -45,14 +45,7 @@ def pack_regularization_object(dropout, k_l2, k_l1, a_l2, a_l1):
         a_l1 -- set activation L1 regularization, boolean
 
     Returns:
-        regularization -- Dictionary of shape:
-            {
-                'dropout': dropout,
-                'k_l2': k_l2,
-                'k_l1': k_l1,
-                'a_l2': a_l2,
-                'a_l1': a_l1
-            }
+        regularization -- Dictionary of regularization settings
     """
     regularization = {}
     regularization["dropout"] = dropout
@@ -63,19 +56,12 @@ def pack_regularization_object(dropout, k_l2, k_l1, a_l2, a_l1):
     return regularization
 
 
-def unpack_regularization_object(regularization):
+def unpack_regularization(regularization):
     """
     Unpacks dropout, kernel and activation regularization settings.
 
     Arguments:
-        regularization -- Dictionary of shape:
-            {
-                'dropout': dropout,
-                'k_l2': k_l2,
-                'k_l1': k_l1,
-                'a_l2': a_l2,
-                'a_l1': a_l1
-            }
+        regularization -- Dictionary of regularization settings
 
     Returns:
         dropout -- add dropout layer, boolean
@@ -84,12 +70,106 @@ def unpack_regularization_object(regularization):
         a_l2 -- set activation L2 regularization, boolean
         a_l1 -- set activation L1 regularization, boolean
     """
+    if regularization is None:
+        return None, None, None, None, None
+
     dropout = regularization["dropout"]
     k_l2 = regularization["k_l2"]
     k_l1 = regularization["k_l1"]
     a_l2 = regularization["a_l2"]
     a_l1 = regularization["a_l1"]
     return dropout, k_l2, k_l1, a_l2, a_l1
+
+
+def pack_model_hyperparameters(f_type, n_features, n_layers, n_epoch, n_batch,
+                               loss, optimizer):
+    """
+    Packs dl model hyperparameters.
+
+    Arguments:
+        f_type -- type of features used
+        n_features - number of features
+        n_layers -- number of hidden layers
+        n_epoch -- number of epochs
+        n_batch -- batch size
+        loss -- loss function
+        optimizer -- optimizer
+
+    Returns:
+        hyperparameters -- Dictionary of model hyperparameters
+    """
+    hyperparameters = {}
+    hyperparameters["f_type"] = f_type
+    hyperparameters["n_features"] = n_features
+    hyperparameters["n_layers"] = n_layers
+    hyperparameters["n_epoch"] = n_epoch
+    hyperparameters["n_batch"] = n_batch
+    hyperparameters["loss"] = loss
+    hyperparameters["optimizer"] = optimizer
+    return hyperparameters
+
+
+def unpack_model_hyperparameters(hyperparameters):
+    """
+    Unpacks dl model hyperparameters.
+
+    Arguments:
+        hyperparameters -- Dictionary of model hyperparameters
+
+    Returns:
+        f_type -- type of features used
+        n_features - number of features
+        n_layers -- number of hidden layers
+        n_epoch -- number of epochs
+        n_batch -- batch size
+        loss -- loss function
+        optimizer -- optimizer
+    """
+    f_type = hyperparameters["f_type"]
+    n_features = hyperparameters["n_features"]
+    n_layers = hyperparameters["n_layers"]
+    n_epoch = hyperparameters["n_epoch"]
+    n_batch = hyperparameters["n_batch"]
+    loss = hyperparameters["loss"]
+    optimizer = hyperparameters["optimizer"]
+    return f_type, n_features, n_layers, n_epoch, n_batch, loss, optimizer
+
+
+def pack_layer_hyperparameters(h_activation, o_activation, kernel_initializer):
+    """
+    Packs dl layer hyperparameters.
+
+    Arguments:
+        h_activation -- hidden layer activation function
+        o_activation -- output layer activation function
+        kernel_initializer -- kernel initializer
+
+    Returns:
+        hyperparameters -- Dictionary of dl layer hyperparameters
+    """
+    hyperparameters = {}
+    hyperparameters["h_activation"] = h_activation
+    hyperparameters["o_activation"] = o_activation
+    hyperparameters["kernel_initializer"] = kernel_initializer
+    return hyperparameters
+
+
+def unpack_layer_hyperparameters(hyperparameters):
+    """
+    Unpacks dl layer hyperparameters.
+
+    Arguments:
+        hyperparameters -- Dictionary of dl layer hyperparameters
+
+    Returns:
+        h_activation -- hidden layer activation function
+        o_activation -- output layer activation function
+        kernel_initializer -- kernel initializer
+    """
+    h_activation = hyperparameters["h_activation"]
+    o_activation = hyperparameters["o_activation"]
+    kernel_initializer = hyperparameters["kernel_initializer"]
+    return h_activation, o_activation, kernel_initializer
 
 
 def initialize_layer_parameters(regularization):
@@ -113,7 +193,7 @@ def initialize_layer_parameters(regularization):
         k_v -- kernel regularizer value, float
         a_v -- activation regularizer value, float
     """
-    _, k_l2, k_l1, a_l2, a_l1 = unpack_regularization_object(regularization)
+    _, k_l2, k_l1, a_l2, a_l1 = unpack_regularization(regularization)
     k_regularizer = None
     a_regularizer = None
     k_v = power(10, -1 * uniform(1, 4))
@@ -142,14 +222,15 @@ def initialize_layer_parameters(regularization):
     return k_regularizer, a_regularizer, k_v, a_v
 
 
-def log_layer_parameters(layer, n_nodes, regularization, rate, k_v, a_v):
+def log_layer_parameters(layer, n_nodes, l_hyperparameters, regularization,
+                         rate, k_v, a_v):
     """
     Logs hidden layer parameters to DL_RESULTS_DETAILS_FILE_NAME  file and
     stdout.
 
     Arguments:
         layer -- hidden layer index, int
-        n_nodes -- number of nodes, int
+        l_hyperparameters -- layer hyper parameters
         regularization -- dropout, kernel and activation regularization
             settings
         rate -- droout date, float
@@ -159,122 +240,142 @@ def log_layer_parameters(layer, n_nodes, regularization, rate, k_v, a_v):
     Returns:
         None
     """
-    dropout, k_l2, k_l1, a_l2, a_l1 \
-        = unpack_regularization_object(regularization)
+    h_activation, o_activation, kernel_initializer = \
+        unpack_layer_hyperparameters(l_hyperparameters)
+
+    dropout, k_l2, k_l1, a_l2, a_l1 = unpack_regularization(regularization)
+
     with open(DL_RESULTS_DETAILS_FILE_NAME, "a") as file:
-        if dropout:
+        if layer != 'output' and dropout:
             file.write("\n    dropout: " + str(dropout))
-            file.write("\n    rate: " + str(rate))
             print("    dropout: " + str(dropout))
+            file.write("\n    rate: " + str(rate))
             print("    rate: " + str(rate))
 
         file.write("\n    layer: " + str(layer))
-        file.write("\n    n_nodes: " + str(n_nodes))
         print("    layer: " + str(layer))
+        file.write("\n    n_nodes: " + str(n_nodes))
         print("    n_nodes: " + str(n_nodes))
 
-        if k_l2:
-            file.write("\n    k_l2: " + str(k_l2))
-            print("    k_l2: " + str(k_l2))
-        if k_l1:
-            file.write("\n    k_l1: " + str(k_l1))
-            print("    k_l1: " + str(k_l1))
-        if k_l2 or k_l1:
-            file.write("\n    k_v: " + str(k_v))
-            print("    k_v: " + str(k_v))
-        if a_l2:
-            file.write("\n    a_l2: " + str(a_l2))
-            print("    a_l2: " + str(a_l2))
-        if a_l1:
-            file.write("\n    a_l1: " + str(a_l1))
-            print("    a_l1: " + str(a_l1))
-        if a_l2 or a_l1:
-            file.write("\n    a_v: " + str(a_v))
-            print("    a_v: " + str(a_v))
+        if layer == 'output':
+            file.write("\n    o_activation: " + str(o_activation))
+            print("    o_activation: " + str(o_activation))
+        else:
+            file.write("\n    h_activation: " + str(h_activation))
+            print("    h_activation: " + str(h_activation))
+            file.write("\n    kernel_initializer: " + str(kernel_initializer))
+            print("    kernel_initializer: " + str(kernel_initializer))
+
+            if k_l2:
+                file.write("\n    k_l2: " + str(k_l2))
+                print("    k_l2: " + str(k_l2))
+            if k_l1:
+                file.write("\n    k_l1: " + str(k_l1))
+                print("    k_l1: " + str(k_l1))
+            if k_l2 or k_l1:
+                file.write("\n    k_v: " + str(k_v))
+                print("    k_v: " + str(k_v))
+            if a_l2:
+                file.write("\n    a_l2: " + str(a_l2))
+                print("    a_l2: " + str(a_l2))
+            if a_l1:
+                file.write("\n    a_l1: " + str(a_l1))
+                print("    a_l1: " + str(a_l1))
+            if a_l2 or a_l1:
+                file.write("\n    a_v: " + str(a_v))
+                print("    a_v: " + str(a_v))
 
 
-def log_dl_hyperparameters(test_id, n_features, n_layers, n_epoch, n_batch,
-                           regularization):
+def log_model_hyperparameters(test_id, m_hyperparameters, regularization):
     """
     Logs model's hyperparameters to DL_RESULTS_DETAILS_FILE_NAME file and
     stdout.
 
     Arguments:
         test_id -- test id, string
-        n_features -- number of features, int
-        n_layers -- number of hidden layers, int
-        n_epoch -- number of epochs, int
-        n_batch -- batch size, int
+        m_hyperparameters -- model hyper parameters
         regularization -- dropout, kernel and activation regularization
             settings
 
     Returns:
         None
     """
+    f_type, n_features, n_layers, n_epoch, n_batch, loss, optimizer = \
+        unpack_model_hyperparameters(m_hyperparameters)
+
     dropout, k_l2, k_l1, a_l2, a_l1 \
-        = unpack_regularization_object(regularization)
+        = unpack_regularization(regularization)
+
     log_string \
-        = "\nTest Id: {}, Num Features: {}, Num Layers: {}, Num Epochs: {},\
-        Num Batch Size: {}, Dropout: {}, \
+        = "\nTest Id: {}, Feature Type: {}, Num Features: {}, Num Layers: {}, \
+        Num Epochs: {}, Num Batch Size: {}, Dropout: {}, \
         k_l2: {}, k_l1: {}, a_l2: {}, a_l1: {}"\
-        .format(test_id, n_features, n_layers, n_epoch, n_batch, dropout,
-                k_l2, k_l1, a_l2, a_l1)
+        .format(test_id, f_type, n_features, n_layers, n_epoch, n_batch,
+                dropout, k_l2, k_l1, a_l2, a_l1)
     print(log_string)
 
     with open(DL_RESULTS_DETAILS_FILE_NAME, "a") as file:
         file.write(log_string)
 
 
-def add_dl_layers(dl_model, n_features, n_layers, regularization):
+def add_dl_layers(dl_model, m_hyperparameters, l_hyperparameters,
+                  regularization):
     """
     Adds hidden layers to the input model using settings provided.
 
     Arguments:
         dl_model -- deep learning model instance of type
             keras.models.Sequential
-        n_features -- number of inout features, int
-        n_layers -- number of hidden layers, int
+        m_hyperparameters -- model hyper parameters
+        l_hyperparameters -- layer hyper parameters
         regularization -- dropout, kernel and activation regularization
             settings
 
     Returns:
         None
     """
-    o_dropout, orig_k_l2, orig_k_l1, orig_a_l2, orig_a_l1 \
-        = unpack_regularization_object(regularization)
+    # unpack hyperparameters
+    f_type, n_features, n_layers, n_epoch, n_batch, loss, optimizer = \
+        unpack_model_hyperparameters(m_hyperparameters)
 
+    h_activation, o_activation, kernel_initializer = \
+        unpack_layer_hyperparameters(l_hyperparameters)
+
+    # define actual regularization settings
+    o_dropout, orig_k_l2, orig_k_l1, orig_a_l2, orig_a_l1 \
+        = unpack_regularization(regularization)
     k_l2 = orig_k_l2 & random.choice([True, False])
     k_l1 = orig_k_l1 & random.choice([True, False])
     a_l2 = orig_a_l2 & random.choice([True, False])
     a_l1 = orig_a_l1 & random.choice([True, False])
 
     n_nodes_per_hidden_layer = []
+    # number of nodes per layer is between 2 and n_features
     for _ in range(0, n_layers):
-        n_nodes_per_hidden_layer.append(
-            int(power(2, 7 * uniform(0.145, 1.0))))
+        n_node = int(power(2, math.sqrt(100) * uniform(0, 1.0)))
+        n_node = n_node if n_node > 2 else 2
+        n_nodes_per_hidden_layer.append(n_node)
 
     upper_limit = 1.0
 
-    regularization = pack_regularization_object(False, k_l2, k_l1, a_l2, a_l1)
+    regularization = pack_regularization(False, k_l2, k_l1, a_l2, a_l1)
     k_regularizer, a_regularizer, k_v, a_v \
         = initialize_layer_parameters(regularization)
     n_nodes = sorted(n_nodes_per_hidden_layer, reverse=True)[0]
 
     dl_model.add(Dense(
-        n_nodes, input_dim=n_features, activation='tanh',
-        kernel_initializer='uniform',
+        n_nodes, input_dim=n_features, activation=h_activation,
+        kernel_initializer=kernel_initializer,
         kernel_regularizer=k_regularizer,
         activity_regularizer=a_regularizer))
 
     log_layer_parameters(
-        1, n_nodes, regularization, 0, k_v, a_v)
+        layer=1, n_nodes=n_nodes, l_hyperparameters=l_hyperparameters,
+        regularization=regularization, rate=0, k_v=k_v, a_v=a_v)
 
     for i in range(1, n_layers):
-
         dropout = o_dropout & random.choice([True, False])
-
         rate = uniform(0, upper_limit)
-
         if dropout:
             upper_limit /= 2
             dl_model.add(Dropout(rate, noise_shape=None, seed=None))
@@ -285,46 +386,56 @@ def add_dl_layers(dl_model, n_features, n_layers, regularization):
         a_l2 = orig_a_l2 & random.choice([True, False])
         a_l1 = orig_a_l1 & random.choice([True, False])
 
-        regularization = pack_regularization_object(
+        regularization = pack_regularization(
             dropout, k_l2, k_l1, a_l2, a_l1)
         k_regularizer, a_regularizer, k_v, a_v \
             = initialize_layer_parameters(regularization)
 
         dl_model.add(Dense(
-            n_nodes, activation='tanh',
+            n_nodes, activation=h_activation,
             kernel_regularizer=k_regularizer,
             activity_regularizer=a_regularizer))
 
         log_layer_parameters(
-            i+1, n_nodes, regularization, rate, k_v, a_v)
+            layer=i+1, n_nodes=n_nodes, l_hyperparameters=l_hyperparameters,
+            regularization=regularization, rate=rate, k_v=k_v, a_v=a_v)
 
 
-def create_dl_model(n_layers, n_features, regularization):
+def create_dl_model(m_hyperparameters, l_hyperparameters, regularization):
     """
     Creates a deep learning model using settings provided.
 
     Arguments:
-        n_layers -- number of hidden layers, int
-        n_features -- number of input features, int
+        m_hyperparameters -- model hyperparameters
+        l_hyperparameters -- layer hyperparameters
         regularization -- dropout, kernel and activation regularization
             settings
 
     Returns:
         dl_model -- deep learning model
     """
+    f_type, n_features, n_layers, n_epoch, n_batch, loss, optimizer = \
+        unpack_model_hyperparameters(m_hyperparameters)
+
+    h_activation, o_activation, kernel_initializer = \
+        unpack_layer_hyperparameters(l_hyperparameters)
+
     dl_model = Sequential()
 
     add_dl_layers(
-        dl_model, n_features, n_layers, regularization)
+        dl_model, m_hyperparameters, l_hyperparameters, regularization)
 
-    dl_model.add(Dense(1, activation='softplus'))
-    adadelta = Adadelta()
-    dl_model.compile(loss='mse', optimizer=adadelta, metrics=['accuracy'])
+    dl_model.add(Dense(1, activation=o_activation))
+    log_layer_parameters(layer='output', n_nodes=1,
+                         l_hyperparameters=l_hyperparameters,
+                         regularization=None, rate=None, k_v=None, a_v=None)
+
+    dl_model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
 
     return dl_model
 
 
-def train_dl_model(dl_model, x_train, y_train, n_batch, n_epoch):
+def train_dl_model(dl_model, x_train, y_train, m_hyperparameters):
     """
     Trains the deep learning model.
 
@@ -334,14 +445,17 @@ def train_dl_model(dl_model, x_train, y_train, n_batch, n_epoch):
             (training_data_size, n_features)
         y_train -- training labels of type numpy.ndarray and shape
             (training_data_size, )
-        n_batch -- batch size, int
-        n_epoch -- number of epochs, int
+        m_hyperparameters -- model hyperparameters
 
     Returns:
         history -- model training history of type keras.callbacks.History
     """
+    f_type, n_features, n_layers, n_epoch, n_batch, loss, optimizer = \
+        unpack_model_hyperparameters(m_hyperparameters)
+
     history = dl_model.fit(
         x_train, y_train, batch_size=n_batch, epochs=n_epoch, verbose=0)
+
     return history
 
 
@@ -357,14 +471,14 @@ def save_dl_header():
     """
     if not os.path.exists(DL_RESULTS_SUMMARY_FILE_NAME):
         with open(DL_RESULTS_SUMMARY_FILE_NAME, "a") as f:
-            f.write("\ntest_id, n_features, n_layers, n_epoch, n_batch, \
-                    rmse, rmse_epsilon, pearson, elapsed_time, dropout, \
-                    k_l2, k_l1, a_l2, a_l1\n")
+            f.write("\ntest_id, f_type, n_features, n_layers, n_epoch, \
+                    n_batch, rmse, rmse_epsilon, pearson, elapsed_time, \
+                    dropout, k_l2, k_l1, a_l2, a_l1\n")
 
 
-def save_dl_results(test_id, n_features, n_layers, n_epoch, n_batch,
-                    regularization, rmse, rmse_epsilon, pearson,
-                    elapsed_time):
+def save_dl_results(test_id, m_hyperparameters, regularization,
+                    rmse_all_counts, rmse_epsilon_all_counts,
+                    pearson_all_counts, elapsed_time):
     """
     Saves averaged results of running a deep learning model over k-fold cross
     validation and repeating 'count' times to DL_RESULTS_SUMMARY_FILE_NAME and
@@ -372,36 +486,37 @@ def save_dl_results(test_id, n_features, n_layers, n_epoch, n_batch,
 
     Arguments:
         test_id -- test id, string
-        n_features -- number of features, int
-        n_layers -- number of hidden layers, int
-        n_epoch -- number of epochs, int
-        n_batch -- batch size, int
+        m_hyperparameters -- model hyperparameters
         regularization -- dropout, kernel and activation regularization
             settings
-        rmse -- root mean square error, list
-        rmse_epsilon -- epsilon root mean square error, list
-        pearson -- pearson correlation coefficient, list
+        rmse_all_counts -- root mean square error, list
+        rmse_epsilon_all_counts -- epsilon root mean square error, list
+        pearson_all_counts -- pearson correlation coefficient, list
         elapsed_time -- elapsed time, string
 
     Returns:
         None
     """
+    f_type, n_features, n_layers, n_epoch, n_batch, loss, optimizer = \
+        unpack_model_hyperparameters(m_hyperparameters)
+
     dropout, k_l2, k_l1, a_l2, a_l1 \
-        = unpack_regularization_object(regularization)
+        = unpack_regularization(regularization)
+
     result_for_print \
-        = "Test Id: {}, Num Features: {}, Num Layers: {}, Num Epochs: {}, \
-Num Batch Size: {}, Dropout: {}, k_l2: {}, k_l1: {}, a_l2: {}, \
-a_l1: {}, RMSE: {}, Epsilon RMSE: {}, Pearson: {}, Elapsed Time: {}"\
-            .format(test_id, n_features, n_layers, n_epoch, n_batch,
-                    dropout, k_l2, k_l1, a_l2, a_l1, mean(rmse),
-                    mean(rmse_epsilon), mean(pearson),
+        = "Test Id: {}, Feature Tyoe: {}, Num Features: {}, Num Layers: {}, \
+Num Epochs: {}, Num Batch Size: {}, Dropout: {}, k_l2: {}, k_l1: {}, a_l2: \
+{}, a_l1: {}, RMSE: {}, Epsilon RMSE: {}, Pearson: {}, Elapsed Time: {}"\
+            .format(test_id, f_type, n_features, n_layers, n_epoch, n_batch,
+                    dropout, k_l2, k_l1, a_l2, a_l1, mean(rmse_all_counts),
+                    mean(rmse_epsilon_all_counts), mean(pearson_all_counts),
                     elapsed_time)
     print("\nOverall Results:\n" + result_for_print)
 
-    result_string_for_csv = '\n{},{},{},{},{},{},{},{},{},{},{},{},{},{}'\
-        .format(test_id, n_features, n_layers, n_epoch, n_batch,
-                mean(rmse), mean(rmse_epsilon),
-                mean(pearson), elapsed_time, dropout,
+    result_string_for_csv = '\n{}, {},{},{},{},{},{},{},{},{},{},{},{},{},{}'\
+        .format(test_id, f_type, n_features, n_layers, n_epoch, n_batch,
+                mean(rmse_all_counts), mean(rmse_epsilon_all_counts),
+                mean(pearson_all_counts), elapsed_time, dropout,
                 k_l2, k_l1, a_l2, a_l1)
 
     with open(DL_RESULTS_SUMMARY_FILE_NAME, "a") as file:
@@ -411,8 +526,9 @@ a_l1: {}, RMSE: {}, Epsilon RMSE: {}, Pearson: {}, Elapsed Time: {}"\
         file.write(result_string_for_csv)
 
 
-def run_dl_model(attributes, labels, test_id, dl_model, count, k, n_features,
-                 n_layers, n_epoch, n_batch, regularization, verbose):
+def run_dl_model(attributes, labels, test_id, dl_model, count, k,
+                 m_hyperparameters, l_hyperparameters, regularization,
+                 verbose):
     """
     Runs deep learning model for given attributes/labels using the given
     hyperparameters and logs the results to files and stdout.
@@ -424,10 +540,8 @@ def run_dl_model(attributes, labels, test_id, dl_model, count, k, n_features,
         dl_model -- deep learning model to train
         count -- repeat count
         k -- number of folds for k-fold crossvalidation
-        n_features -- number of inout features, int
-        n_layers -- number of hidden layers, int
-        n_epoch -- number of epocs, int
-        n_batch -- batch size, int
+        m_hyperparameters -- model hyperparameters
+        l_hyperparameters -- layer hyperparameters
         regularization -- dropout, kernel and activation regularization
             settings
         verbose -- verbose flag
@@ -437,15 +551,21 @@ def run_dl_model(attributes, labels, test_id, dl_model, count, k, n_features,
     """
     start_time = time.time()
 
-    log_dl_hyperparameters(
-        test_id, n_features, n_layers, n_epoch, n_batch, regularization)
+    log_model_hyperparameters(test_id, m_hyperparameters, regularization)
+
+    f_type, n_features, n_layers, n_epoch, n_batch, loss, optimizer = \
+        unpack_model_hyperparameters(m_hyperparameters)
+
+    h_activation, o_activation, kernel_initializer = \
+        unpack_layer_hyperparameters(l_hyperparameters)
 
     rmse_all_counts = []
     rmse_epsilon_all_counts = []
     pearson_all_counts = []
 
     if dl_model is None:
-        dl_model = create_dl_model(n_layers, n_features, regularization)
+        dl_model = create_dl_model(m_hyperparameters, l_hyperparameters,
+                                   regularization)
 
     model_weights = dl_model.get_weights()
 
@@ -472,7 +592,7 @@ def run_dl_model(attributes, labels, test_id, dl_model, count, k, n_features,
 
             dl_model.set_weights(model_weights)
 
-            train_dl_model(dl_model, x_train, y_train, n_batch, n_epoch)
+            train_dl_model(dl_model, x_train, y_train, m_hyperparameters)
 
             prediction = dl_model.predict(x_test)
 
@@ -499,6 +619,6 @@ def run_dl_model(attributes, labels, test_id, dl_model, count, k, n_features,
 
     elapsed_time = time.strftime("%H:%M:%S",
                                  time.gmtime(time.time()-start_time))
-    save_dl_results(test_id, n_features, n_layers, n_epoch, n_batch,
-                    regularization, rmse_all_counts, rmse_epsilon_all_counts,
+    save_dl_results(test_id, m_hyperparameters, regularization,
+                    rmse_all_counts, rmse_epsilon_all_counts,
                     pearson_all_counts, elapsed_time)
