@@ -44,7 +44,7 @@ def build_common_parser():
     parser.add_argument('--count', type=int, default=3,
                         help="repeat 'count' times k-fold cross validation on \
                         the same model")
-    parser.add_argument('--f_type', choices=['sorted', 'pca'], default='pca',
+    parser.add_argument('--f_type', choices=['sorted', 'pca'], default=None,
                         help='features to use: sorted, pca')
     return parser
 
@@ -59,7 +59,8 @@ def add_dl_parser_arguments(parser):
     Returns:
         parser -- ArgumentParser with dl arguments
     """
-    parser.add_argument('--n_layer', type=int,
+    # model hyper parameters
+    parser.add_argument('--n_layers', type=int,
                         default=None, choices=["1 - 20"],
                         help="max number of hidden layers")
     parser.add_argument('--n_epoch', type=int,
@@ -67,6 +68,42 @@ def add_dl_parser_arguments(parser):
                         help='max number of epochs')
     parser.add_argument('--n_batch', choices=["1-120"], default=120,
                         help='batch number')
+    parser.add_argument('--loss', default=None,
+                        choices=['mean_squared_error', 'mean_absolute_error',
+                                 'mean_absolute_percentage_error',
+                                 'mean_squared_logarithmic_error',
+                                 'squared_hinge', 'hinge', 'categorical_hinge',
+                                 'logcosh', 'sparse_categorical_crossentropy',
+                                 'binary_crossentropy',
+                                 'kullback_leibler_divergence', 'poisson',
+                                 'cosine_proximity'],
+                        help='loss function')
+    parser.add_argument('--optimizer', default=None,
+                        choices=['SGD', 'RMSprop', 'Adagrad', 'Adadelta',
+                                 'Adam', 'Adamax', 'Nadam', 'TFOptimizer'],
+                        help='optimizer')
+
+    # layer hyper parameters
+    parser.add_argument('--h_activation', default=None,
+                        choices=['softmax', 'elu', 'selu', 'softplus',
+                                 'softsign', 'relu', 'tanh', 'sigmoid',
+                                 'hard_sigmoid', 'linear'],
+                        help='hidden layer activation function')
+    parser.add_argument('--o_activation', default=None,
+                        choices=['softmax', 'elu', 'selu', 'softplus',
+                                 'softsign', 'relu', 'tanh', 'sigmoid',
+                                 'hard_sigmoid', 'linear'],
+                        help='output layer activation function')
+    parser.add_argument('--k_initializer', default=None,
+                        choices=['zeros', 'ones', 'random_normal',
+                                 'random_uniform', 'truncated_normal',
+                                 'variance_scaling', 'orthogonal',
+                                 'lecun_uniform', 'glorot_normal',
+                                 'glorot_uniform', 'he_normal', 'lecun_normal',
+                                 'he_uniform'],
+                        help='kernel initializer')
+
+    # regularization settings
     parser.add_argument('--dropout', action="store_true",
                         default=None,
                         help="apply dropout")
@@ -82,6 +119,7 @@ def add_dl_parser_arguments(parser):
     parser.add_argument('--a_l1', action="store_true",
                         default=None,
                         help='activation L1 regularization')
+
 
 
 def add_rf_parser_arguments(parser):

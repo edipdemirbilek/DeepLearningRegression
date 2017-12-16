@@ -37,9 +37,12 @@ import random
 from numpy import power
 from numpy.random import rand, uniform
 
+from keras.optimizers import SGD, RMSprop, Adagrad, Adadelta, Adam, Adamax, \
+    Nadam, TFOptimizer
+
 from utils.dataset_util import load_dataset
-from utils.dl_util import pack_regularization_object, \
-    create_dl_model, run_dl_model, save_dl_header
+from utils.dl_util import pack_regularization, pack_layer_hyperparameters, \
+    pack_model_hyperparameters, create_dl_model, run_dl_model, save_dl_header
 from utils.rf_util import create_rf_model, run_rf_model, save_rf_header, \
     pack_rf_conf_object
 from utils.pca_util import generate_pca_features
@@ -47,6 +50,39 @@ from utils.parser_util import build_parser
 from models.dl_models import dl_model_1, dl_model_2, dl_model_3, \
     dl_model_4, dl_model_5, dl_model_6, dl_model_7, dl_model_8, dl_model_9, \
     dl_model_10
+
+
+def get_optimizer(optimizer):
+    """
+    Creates optimizer function from name
+
+    Arguments:
+        optimizer -- optimizer name.
+
+    Returns:
+        optimizer -- optimizer function
+
+    Raises:
+        Exception -- not valid optimizer
+    """
+    if optimizer == 'SGD':
+        return SGD()
+    elif optimizer == 'RMSprop':
+        return RMSprop()
+    elif optimizer == 'Adagrad':
+        return Adagrad()
+    elif optimizer == 'Adadelta':
+        return Adadelta()
+    elif optimizer == 'Adam':
+        return Adam()
+    elif optimizer == 'Adamax':
+        return Adamax()
+    elif optimizer == 'Nadam':
+        return Nadam()
+    elif optimizer == 'TFOptimizer':
+        return TFOptimizer()
+    else:
+        raise ValueError('Unexpected optimizer value: '+str(optimizer))
 
 
 def process_dl_random_model(args):
@@ -67,36 +103,81 @@ def process_dl_random_model(args):
     for i in range(1, args.n_models):
         test_id = str(i)+str(rand())
 
+        # model hyperparameters
         n_features = args.n_features if args.n_features else \
             int(power(2, 7 * uniform(0, 0.995112040666012)))
 
-        attributes, labels = load_dataset(args.f_type, n_features)
+        f_type = args.f_type if args.f_type else \
+            random.choice(['sorted', 'pca'])
 
-        n_layer = args.n_layer if args.n_layer else \
-            int(power(2, 5 * uniform(0, 1.0)))
+        n_layers = args.n_layers if args.n_layers else \
+            int(power(2, 3 * uniform(0, 1.0)))
 
         n_epoch = args.n_epoch if args.n_epoch else \
-            int(power(2, 14 * uniform(0.617418299269623, 1.0)))
+            int(power(2, 13 * uniform(0.617418299269623, 1.0)))
 
+        n_batch = args.n_batch
+
+        loss = args.loss if args.loss else \
+            random.choice(['mean_squared_error', 'mean_absolute_error',
+                           'mean_absolute_percentage_error',
+                           'mean_squared_logarithmic_error', 'squared_hinge',
+                           'hinge', 'categorical_hinge', 'logcosh',
+                           'sparse_categorical_crossentropy',
+                           'binary_crossentropy',
+                           'kullback_leibler_divergence', 'poisson',
+                           'cosine_proximity'])
+
+        optimizer = args.optimizer if args.optimizer else \
+            random.choice(['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam',
+                           'Adamax', 'Nadam', 'TFOptimizer'])
+        optimizer = get_optimizer(optimizer=optimizer)
+
+        m_hyperparameters = \
+            pack_model_hyperparameters(f_type, n_features, n_layers, n_epoch,
+                                       n_batch, loss, optimizer)
+
+        # layer hyperparameters
+        h_activation = args.h_activation if args.h_activation else \
+            random.choice(['softmax', 'elu', 'selu', 'softplus', 'softsign',
+                          'relu', 'tanh', 'sigmoid', 'hard_sigmoid', 'linear'])
+
+        o_activation = args.o_activation if args.o_activation else \
+            random.choice(['softmax', 'elu', 'selu', 'softplus', 'softsign',
+                          'relu', 'tanh', 'sigmoid', 'hard_sigmoid', 'linear'])
+
+        kernel_initializer = args.k_initializer if args.k_initializer else \
+            random.choice(['zeros', 'ones', 'random_normal', 'random_uniform',
+                           'truncated_normal', 'variance_scaling',
+                           'orthogonal', 'lecun_uniform',
+                           'glorot_normal', 'glorot_uniform', 'he_normal',
+                           'lecun_normal', 'he_uniform'])
+
+        l_hyperparameters = pack_layer_hyperparameters(
+            h_activation, o_activation, kernel_initializer)
+
+        # regularization
         dropout = args.dropout if args.dropout else \
             random.choice([True, False])
-
         k_l2 = args.k_l2 if args.k_l2 else random.choice([True, False])
         k_l1 = args.k_l1 if args.k_l1 else random.choice([True, False])
         a_l2 = args.a_l2 if args.a_l2 else random.choice([True, False])
         a_l1 = args.a_l1 if args.a_l1 else random.choice([True, False])
 
-        regularization = pack_regularization_object(
-            dropout=dropout, k_l2=k_l2, k_l1=k_l1,
-            a_l2=a_l2, a_l1=a_l1)
+        regularization = pack_regularization(dropout=dropout, k_l2=k_l2,
+                                             k_l1=k_l1, a_l2=a_l2, a_l1=a_l1)
 
-        dl_model = create_dl_model(n_layer, n_features,
+        # load data
+        attributes, labels = load_dataset(f_type, n_features)
+
+        # create model
+        dl_model = create_dl_model(m_hyperparameters, l_hyperparameters,
                                    regularization)
 
+        # run model
         run_dl_model(attributes, labels, test_id, dl_model, args.count,
-                     args.k, n_features, n_layer, n_epoch,
-                     args.n_batch, regularization,
-                     verbose=args.verbose)
+                     args.k, m_hyperparameters, l_hyperparameters,
+                     regularization, verbose=args.verbose)
 
 
 def process_dl_custom_model(args):
@@ -130,7 +211,7 @@ def process_dl_custom_model(args):
 
     n_features = args.n_features if args.n_features else 125
 
-    attributes, labels = load_dataset("sorped")
+    attributes, labels = load_dataset("sorted")
 
     dl_model, n_layers, n_epoch, n_batch_size, regularization \
         = custom_dl_models[args.model_id](n_features)
