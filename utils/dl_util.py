@@ -263,8 +263,10 @@ def log_layer_parameters(layer, n_nodes, l_hyperparameters, regularization,
         else:
             file.write("\n    h_activation: " + str(h_activation))
             print("    h_activation: " + str(h_activation))
-            file.write("\n    kernel_initializer: " + str(kernel_initializer))
-            print("    kernel_initializer: " + str(kernel_initializer))
+
+            if layer == 1:
+                file.write("\n    kernel_initializer: " + str(kernel_initializer))
+                print("    kernel_initializer: " + str(kernel_initializer))
 
             if k_l2:
                 file.write("\n    k_l2: " + str(k_l2))
@@ -352,7 +354,7 @@ def add_dl_layers(dl_model, m_hyperparameters, l_hyperparameters,
     n_nodes_per_hidden_layer = []
     # number of nodes per layer is between 2 and n_features
     for _ in range(0, n_layers):
-        n_node = int(power(2, math.sqrt(100) * uniform(0, 1.0)))
+        n_node = int(power(2, math.sqrt(n_features) * uniform(0, 1.0)))
         n_node = n_node if n_node > 2 else 2
         n_nodes_per_hidden_layer.append(n_node)
 

@@ -80,7 +80,7 @@ def add_dl_parser_arguments(parser):
                         help='loss function')
     parser.add_argument('--optimizer', default=None,
                         choices=['SGD', 'RMSprop', 'Adagrad', 'Adadelta',
-                                 'Adam', 'Adamax', 'Nadam', 'TFOptimizer'],
+                                 'Adam', 'Adamax', 'Nadam'],
                         help='optimizer')
 
     # layer hyper parameters
@@ -97,8 +97,7 @@ def add_dl_parser_arguments(parser):
     parser.add_argument('--k_initializer', default=None,
                         choices=['zeros', 'ones', 'random_normal',
                                  'random_uniform', 'truncated_normal',
-                                 'variance_scaling', 'orthogonal',
-                                 'lecun_uniform', 'glorot_normal',
+                                 'orthogonal', 'lecun_uniform', 'glorot_normal',
                                  'glorot_uniform', 'he_normal', 'lecun_normal',
                                  'he_uniform'],
                         help='kernel initializer')

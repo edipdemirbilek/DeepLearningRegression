@@ -79,8 +79,6 @@ def get_optimizer(optimizer):
         return Adamax()
     elif optimizer == 'Nadam':
         return Nadam()
-    elif optimizer == 'TFOptimizer':
-        return TFOptimizer()
     else:
         raise ValueError('Unexpected optimizer value: '+str(optimizer))
 
@@ -130,7 +128,7 @@ def process_dl_random_model(args):
 
         optimizer = args.optimizer if args.optimizer else \
             random.choice(['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam',
-                           'Adamax', 'Nadam', 'TFOptimizer'])
+                           'Adamax', 'Nadam'])
         optimizer = get_optimizer(optimizer=optimizer)
 
         m_hyperparameters = \
@@ -148,8 +146,7 @@ def process_dl_random_model(args):
 
         kernel_initializer = args.k_initializer if args.k_initializer else \
             random.choice(['zeros', 'ones', 'random_normal', 'random_uniform',
-                           'truncated_normal', 'variance_scaling',
-                           'orthogonal', 'lecun_uniform',
+                           'truncated_normal', 'orthogonal', 'lecun_uniform',
                            'glorot_normal', 'glorot_uniform', 'he_normal',
                            'lecun_normal', 'he_uniform'])
 
