@@ -26,7 +26,8 @@ def build_common_parser():
                         help='increase output verbosity',
                         action="store_true")
     parser.add_argument('--m_type', required=True,
-                        choices=['dl', 'rf', 'pca'],
+                        choices=['dl', 'rf', 'pca', 'fast_ica',
+                                 'incremental_pca', 'kernel_pca'],
                         help='model type: deep learning, random forests or \
                         bagging')
     parser.add_argument('--random', action="store_true", help="random search \
@@ -44,8 +45,9 @@ def build_common_parser():
     parser.add_argument('--count', type=int, default=3,
                         help="repeat 'count' times k-fold cross validation on \
                         the same model")
-    parser.add_argument('--f_type', choices=['sorted', 'pca'], default=None,
-                        help='features to use: sorted, pca')
+    parser.add_argument('--f_type', choices=['sorted', 'pca', 'fast_ica',
+                                             'incremental_pca', 'kernel_pca'],
+                        default=None, help='features to use')
     return parser
 
 
@@ -97,9 +99,9 @@ def add_dl_parser_arguments(parser):
     parser.add_argument('--k_initializer', default=None,
                         choices=['zeros', 'ones', 'random_normal',
                                  'random_uniform', 'truncated_normal',
-                                 'orthogonal', 'lecun_uniform', 'glorot_normal',
-                                 'glorot_uniform', 'he_normal', 'lecun_normal',
-                                 'he_uniform'],
+                                 'orthogonal', 'lecun_uniform',
+                                 'glorot_normal', 'glorot_uniform',
+                                 'he_normal', 'lecun_normal', 'he_uniform'],
                         help='kernel initializer')
 
     # regularization settings
@@ -118,7 +120,6 @@ def add_dl_parser_arguments(parser):
     parser.add_argument('--a_l1', action="store_true",
                         default=None,
                         help='activation L1 regularization')
-
 
 
 def add_rf_parser_arguments(parser):
