@@ -15,8 +15,11 @@ from numpy import array, asarray
 
 SORTED_DATASET_FILE_NAME = \
     "./dataset/rf_sorted/bitstream_dataset_columns_sorted.csv"
-PCA_FEATURES_FILE_PREFIX = \
-    "./dataset/pca_extracted/pca_"
+PCA_FEATURES_FILE_PREFIX = "./dataset/pca_extracted/pca_"
+FAST_ICA_FEATURES_FILE_PREFIX = "./dataset/fast_ica_extracted/fast_ica_"
+INCREMENTAL_PCA_FEATURES_FILE_PREFIX = \
+    "./dataset/incremental_pca_extracted/incremental_pca_"
+KERNEL_PCA_FEATURES_FILE_PREFIX = "./dataset/kernel_pca_extracted/kernel_pca_"
 
 
 def pack_partitioned_data(x_train, x_test, y_train, y_test, ci_high, ci_low):
@@ -113,6 +116,12 @@ def load_dataset(f_type, n_features):
     file_name = SORTED_DATASET_FILE_NAME
     if(f_type == "pca"):
         file_name = PCA_FEATURES_FILE_PREFIX+str(n_features)+".csv"
+    elif(f_type == "fast_ica"):
+        file_name = FAST_ICA_FEATURES_FILE_PREFIX+str(n_features)+".csv"
+    elif(f_type == "incremental_pca"):
+        file_name = INCREMENTAL_PCA_FEATURES_FILE_PREFIX+str(n_features)+".csv"
+    elif(f_type == "kernal_pca"):
+        file_name = KERNEL_PCA_FEATURES_FILE_PREFIX+str(n_features)+".csv"
 
     print("Reading from file: "+file_name)
 

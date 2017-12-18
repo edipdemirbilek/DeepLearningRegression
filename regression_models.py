@@ -38,14 +38,14 @@ from numpy import power
 from numpy.random import rand, uniform
 
 from keras.optimizers import SGD, RMSprop, Adagrad, Adadelta, Adam, Adamax, \
-    Nadam, TFOptimizer
+    Nadam
 
 from utils.dataset_util import load_dataset
 from utils.dl_util import pack_regularization, pack_layer_hyperparameters, \
     pack_model_hyperparameters, create_dl_model, run_dl_model, save_dl_header
 from utils.rf_util import create_rf_model, run_rf_model, save_rf_header, \
     pack_rf_conf_object
-from utils.pca_util import generate_pca_features
+from utils.fe_util import generate_features
 from utils.parser_util import build_parser
 from models.dl_models import dl_model_1, dl_model_2, dl_model_3, \
     dl_model_4, dl_model_5, dl_model_6, dl_model_7, dl_model_8, dl_model_9, \
@@ -106,7 +106,8 @@ def process_dl_random_model(args):
             int(power(2, 7 * uniform(0, 0.995112040666012)))
 
         f_type = args.f_type if args.f_type else \
-            random.choice(['sorted', 'pca'])
+            random.choice(['sorted', 'pca', 'fast_ica', 'incremental_pca',
+                           'kernel_pca'])
 
         n_layers = args.n_layers if args.n_layers else \
             int(power(2, 3 * uniform(0, 1.0)))
@@ -316,9 +317,9 @@ def process_rf_random_model(args):
                      args.k, n_features, rf_conf_object, verbose=args.verbose)
 
 
-def process_pca(args):
+def process_feature_extraction(args, method):
     """
-    To extract features using PCA.
+    To extract features using method type provided.
 
     Arguments:
         args -- a number of arguments. See top level dostrings for
@@ -332,9 +333,9 @@ def process_pca(args):
     """
     n_features = args.n_features if args.n_features else 125
 
-    attributes, labels = load_dataset("sorted")
+    attributes, labels = load_dataset("sorted", n_features)
 
-    generate_pca_features(attributes, labels, n_features)
+    generate_features(attributes, labels, n_features, method)
 
 
 def main():
@@ -369,8 +370,8 @@ def main():
         if args.random:
             process_rf_random_model(args)
 
-    elif args.m_type == "pca":
-        process_pca(args)
+    else:
+        process_feature_extraction(args, args.m_type)
 
 
 if __name__ == '__main__':
