@@ -209,14 +209,23 @@ def process_dl_custom_model(args):
 
     n_features = args.n_features if args.n_features else 125
 
-    attributes, labels = load_dataset("sorted")
+    attributes, labels = load_dataset("sorted", n_features)
 
     dl_model, n_layers, n_epoch, n_batch_size, regularization \
         = custom_dl_models[args.model_id](n_features)
+
+    m_hyperparameters = \
+            pack_model_hyperparameters('sorted', n_features, n_layers, n_epoch,
+                                       n_batch_size, loss='mean_squared_error', 
+                                       optimizer = get_optimizer(optimizer='Adadelta'))
+    l_hyperparameters = pack_layer_hyperparameters(
+            h_activation='tanh', o_activation='softplus', 
+            kernel_initializer='random_uniform')
+
     run_dl_model(
         attributes, labels, test_id, dl_model, args.count, args.k,
-        n_features, n_layers, n_epoch, n_batch_size,
-        regularization, verbose=args.verbose)
+        m_hyperparameters, l_hyperparameters,
+        regularization, args.verbose)
 
 
 def process_rf_random_model(args):
