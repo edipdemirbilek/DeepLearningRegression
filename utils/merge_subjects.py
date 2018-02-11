@@ -10,11 +10,11 @@ import glob
 
 df3 = pd.DataFrame()
 
-subjects_dir = "/Users/edip.demirbilek/PrivateProjects/MultimediaRegressionModels/dataset/subject_details/"
-mos_dir = "/Users/edip.demirbilek/PrivateProjects/MultimediaRegressionModels/dataset/"
-mos_bitstream_file = "bitstream_dataset.csv"
-mos_base_file = "base_dataset.csv"
-mos_bitstream_subjects_file = "bitstream_subjects_dataset.csv"
+root_dir = "/Users/edip.demirbilek/PrivateProjects/MultimediaRegressionModels/dataset/"
+subjects_dir = root_dir + "/subject_details/"
+mos_bitstream_file = root_dir + "/rf_sorted/bitstream_dataset_columns_sorted.csv"
+mos_base_file = root_dir + "/base_dataset.csv"
+mos_bitstream_subjects_file = root_dir + "/rf_sorted/bitstream_subjects_dataset_columns_sorted.csv"
 
 all_files = glob.glob(subjects_dir + "/*.csv")
 
@@ -23,9 +23,9 @@ df_from_each_file = (pd.read_csv(f) for f in all_files)
 concatenated_df = pd.concat(df_from_each_file, ignore_index=True)
 
 # DataFrame (160, 7)
-df = pd.read_csv(mos_dir+mos_base_file)
-# DataFrame (160, 126)
-df2 = pd.read_csv(mos_dir+mos_bitstream_file)
+df = pd.read_csv(mos_base_file)
+# DataFrame (160, 128)
+df2 = pd.read_csv(mos_bitstream_file)
 df3 = pd.DataFrame()
 
 # concatenated_df -> DataFrame (4564, 2)
@@ -50,7 +50,7 @@ for index, row in concatenated_df.iterrows():
     aPLR = row_base['aPLR']
 
     # find bitstream row for selected FPS, Q, NR, vPLR, aPLR
-    # row bitstream -> DataFrame (1, 126)
+    # row bitstream -> DataFrame (1, 128)
     row_bitstream = df2.loc[(df2['VideoFrameRate'] == float(FPS)) &
                             (df2['QP'] == float(Q)) &
                             (df2['NR'] == float(NR)) &
@@ -58,19 +58,19 @@ for index, row in concatenated_df.iterrows():
                             (df2['AudioPacketLossRate'] == float(aPLR))]
 
     # take entire bitstream row except MOS
-    # entire_row -> DataFrame (1, 125)
-    entire_row = row_bitstream.loc[:, :'DTS30aFrameCountDiff']
+    # entire_row -> DataFrame (1, 127)
+    entire_row = row_bitstream.loc[:, :'CILow']
     entire_row = entire_row.reset_index(drop=True)
 
     # concat bitstream row above with the MOS from user
     # MOS_column -> DataFrame (1, 1)
     MOS_column = pd.DataFrame(columns=['MOS'])
     MOS_column.loc[0] = [MOS]
-    # final_row -> DataFrame (1, 126)
+    # final_row -> DataFrame (1, 128)
     final_row = pd.concat([entire_row, MOS_column], axis=1)
 
     # append bitstream row + MOS to global result
     df3 = df3.append(final_row)
 
-# df3 -> DataFrame (4564, 126)
-df3.to_csv(mos_dir+mos_bitstream_subjects_file, index=False)
+# df3 -> DataFrame (4564, 128)
+df3.to_csv(mos_bitstream_subjects_file, index=False)

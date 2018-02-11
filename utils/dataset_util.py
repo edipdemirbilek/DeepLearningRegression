@@ -11,10 +11,13 @@ Todo:
     * Read parametric version of the INRS Audiovisual Quality Dataset.
 """
 import random
+import pandas as pd
 from numpy import array, asarray
 
 SORTED_DATASET_FILE_NAME = \
     "./dataset/rf_sorted/bitstream_dataset_columns_sorted.csv"
+SORTED_SUBJECTS_DATASET_FILE_NAME = \
+    "./dataset/rf_sorted/bitstream_subjects_dataset_columns_sorted.csv"
 PCA_FEATURES_FILE_PREFIX = "./dataset/pca_extracted/pca_"
 FAST_ICA_FEATURES_FILE_PREFIX = "./dataset/fast_ica_extracted/fast_ica_"
 INCREMENTAL_PCA_FEATURES_FILE_PREFIX = \
@@ -154,7 +157,8 @@ def load_dataset(f_type, n_features):
     return attributes, labels
 
 
-def partition_data(attributes, train_index, test_index, labels, n_features):
+def partition_data(attributes, train_index, test_index, labels, n_features,
+                   f_type):
     """
     Partition attributes(data) and labels into training and test data using
     train and test indexes provided and packs them into partitioned_data.
@@ -165,6 +169,7 @@ def partition_data(attributes, train_index, test_index, labels, n_features):
         test_index -- Test Indexes, numpy.ndarray of size (test_size, )
         labels -- Labels, list of size data_size
         n_features -- Number of features, int
+        f_type -- only used when value is 'sorted_subjects'
 
     Returns:
         partitioned_data -- Partitioned data, Dictionary of shape:
@@ -194,6 +199,10 @@ def partition_data(attributes, train_index, test_index, labels, n_features):
           [attributes[i] for i in test_index], \
           [labels[i] for i in train_index], \
           [labels[i] for i in test_index]
+
+    if (f_type == 'sorted_subjects'):
+        x_train_all_attributes, y_train \
+            = substitute_training_data(x_train_all_attributes, y_train)
 
     x_train = []
     x_test = []
@@ -266,7 +275,8 @@ def normalize_data(partitioned_data):
     return partitioned_data
 
 
-def prepare_data(attributes, train_index, test_index, labels, n_features):
+def prepare_data(attributes, train_index, test_index, labels, n_features,
+                 f_type):
     """
     Partition and normalize data.
 
@@ -276,6 +286,7 @@ def prepare_data(attributes, train_index, test_index, labels, n_features):
         test_index -- Test Indexes, numpy.ndarray of size (test_size, )
         labels -- Labels, list of size data_size
         n_features -- Number of features, int
+        f_type -- only used when value is 'sorted_subjects'
 
     Returns:
         partitioned_data -- Partitioned data, Dictionary of shape:
@@ -293,8 +304,52 @@ def prepare_data(attributes, train_index, test_index, labels, n_features):
             }
     """
     partitioned_data = partition_data(
-        attributes, train_index, test_index, labels, n_features)
+        attributes, train_index, test_index, labels, n_features, f_type)
 
     partitioned_data = normalize_data(partitioned_data)
 
     return partitioned_data
+
+
+def substitute_training_data(x_train_all_attributes, y_train):
+    """
+    Substitute MOS training data with detailed subjetcs training data.
+
+    Arguments:
+        x_train_all_attributes -- Training attributes,
+                    numpy.ndarray of shape (training_size, n_features)
+        y_train -- Training labels, numpy.ndarray of shape
+                    (training_size, )
+
+    Returns:
+        attributes -- Training attributes,
+                    numpy.ndarray of shape (training_size * ~30, n_features)
+        labels -- Training labels, numpy.ndarray of shape
+                    (training_size * ~30, )
+    """
+    x_train_all_attributes = pd.DataFrame(x_train_all_attributes)
+    y_train = pd.DataFrame(y_train)
+
+    file_name = SORTED_SUBJECTS_DATASET_FILE_NAME
+
+    attributes_tmp = pd.read_csv(file_name)
+    attributes_selected_tmp = pd.DataFrame()
+    attributes_tmp = attributes_tmp.sample(frac=1).reset_index(drop=True)
+
+    for index, row in x_train_all_attributes.iterrows():
+        rows_selected = attributes_tmp.loc[
+                (attributes_tmp['VideoFrameRate'] == row[123]) &
+                (attributes_tmp['QP'] == row[91]) &
+                (attributes_tmp['NR'] == row[124]) &
+                (attributes_tmp['VideoPacketLossRate'] ==
+                 row[0]) &
+                (attributes_tmp['AudioPacketLossRate'] ==
+                 row[11])
+                ]
+        attributes_selected_tmp = attributes_selected_tmp.append(rows_selected)
+
+    attributes_selected_tmp = attributes_selected_tmp.reset_index(drop=True)
+    attributes = attributes_selected_tmp.loc[:, :'CILow']
+    labels = attributes_selected_tmp.loc[:, 'MOS':]
+
+    return asarray(attributes), asarray(labels)

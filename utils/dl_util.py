@@ -24,7 +24,8 @@ from keras.layers.core import Dense
 from keras.layers import Dropout
 from keras import regularizers
 
-from utils.dataset_util import prepare_data, unpack_partitioned_data
+from utils.dataset_util import prepare_data, unpack_partitioned_data, \
+    substitute_training_data
 from utils.common_util import accumulate_results_from_folds, compute_metrics, \
     compute_and_accumulate_results_from_counts
 
@@ -587,7 +588,8 @@ def run_dl_model(attributes, labels, test_id, dl_model, count, k,
         for train_index, test_index in k_fold.split(attributes):
 
             partitioned_data = prepare_data(
-                attributes, train_index, test_index, labels, n_features)
+                attributes, train_index, test_index, labels, n_features,
+                f_type)
 
             x_train, x_test, y_train, y_test, ci_high, ci_low \
                 = unpack_partitioned_data(partitioned_data)

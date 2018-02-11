@@ -25,6 +25,12 @@ Usage Examples:
             This would create n=500 deep learning based models by randomly
             selecting hyperparameters using the default values.
 
+        $ python regression_models.py --m_type=dl --random
+            --f_type=sorted_subjects
+            This would create n=500 deep learning based models by randomly
+            selecting hyperparameters using the default values using detailed
+            subjects data during training phase.
+
         $ python regression_models.py --h
             This would print help. Use help or docstrings for a complete list
             of parameters and operations available.
@@ -106,8 +112,8 @@ def process_dl_random_model(args):
             int(power(2, 7 * uniform(0, 0.995112040666012)))
 
         f_type = args.f_type if args.f_type else \
-            random.choice(['sorted', 'pca', 'fast_ica', 'incremental_pca',
-                           'kernel_pca'])
+            random.choice(['sorted', 'sorted_subjects', 'pca', 'fast_ica',
+                           'incremental_pca', 'kernel_pca'])
 
         n_layers = args.n_layers if args.n_layers else \
             int(power(2, 3 * uniform(0, 1.0)))
@@ -215,11 +221,11 @@ def process_dl_custom_model(args):
         = custom_dl_models[args.model_id](n_features)
 
     m_hyperparameters = \
-            pack_model_hyperparameters('sorted', n_features, n_layers, n_epoch,
-                                       n_batch_size, loss='mean_squared_error', 
-                                       optimizer = get_optimizer(optimizer='Adadelta'))
+        pack_model_hyperparameters('sorted', n_features, n_layers, n_epoch,
+                                   n_batch_size, loss='mean_squared_error',
+                                   optimizer = get_optimizer(optimizer='Adadelta'))
     l_hyperparameters = pack_layer_hyperparameters(
-            h_activation='tanh', o_activation='softplus', 
+            h_activation='tanh', o_activation='softplus',
             kernel_initializer='random_uniform')
 
     run_dl_model(
