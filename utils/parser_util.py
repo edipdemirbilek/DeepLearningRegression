@@ -45,7 +45,8 @@ def build_common_parser():
     parser.add_argument('--count', type=int, default=3,
                         help="repeat 'count' times k-fold cross validation on \
                         the same model")
-    parser.add_argument('--f_type', choices=['sorted', 'pca', 'fast_ica',
+    parser.add_argument('--f_type', choices=['sorted', 'sorted_subjects',
+                                             'pca', 'fast_ica',
                                              'incremental_pca', 'kernel_pca'],
                         default=None, help='features to use')
     return parser
