@@ -64,12 +64,12 @@ def add_dl_parser_arguments(parser):
     """
     # model hyper parameters
     parser.add_argument('--n_layers', type=int,
-                        default=None, choices=["1 - 20"],
+                        default=None,
                         help="max number of hidden layers")
     parser.add_argument('--n_epoch', type=int,
-                        default=None, choices=["1 - 2^14"],
+                        default=None,
                         help='max number of epochs')
-    parser.add_argument('--n_batch', choices=["1-120"], default=120,
+    parser.add_argument('--n_batch', default=120,
                         help='batch number')
     parser.add_argument('--loss', default=None,
                         choices=['mean_squared_error', 'mean_absolute_error',
