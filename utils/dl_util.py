@@ -355,7 +355,7 @@ def add_dl_layers(dl_model, m_hyperparameters, l_hyperparameters,
     n_nodes_per_hidden_layer = []
     # number of nodes per layer is between 2 and n_features
     for _ in range(0, n_layers):
-        n_node = int(power(2, math.sqrt(n_features) * uniform(0, 1.0)))
+        n_node = int(power(2, math.sqrt(n_features) * uniform(0, 0.8)))
         n_node = n_node if n_node > 2 else 2
         n_nodes_per_hidden_layer.append(n_node)
 
