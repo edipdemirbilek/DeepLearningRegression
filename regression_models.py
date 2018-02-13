@@ -39,6 +39,7 @@ Attributes:
     check parser_util.py for available options
 """
 import random
+import sys
 
 from numpy import power
 from numpy.random import rand, uniform
@@ -178,10 +179,13 @@ def process_dl_random_model(args):
         dl_model = create_dl_model(m_hyperparameters, l_hyperparameters,
                                    regularization)
 
-        # run model
-        run_dl_model(attributes, labels, test_id, dl_model, args.count,
-                     args.k, m_hyperparameters, l_hyperparameters,
-                     regularization, verbose=args.verbose)
+        try:
+            # run model
+            run_dl_model(attributes, labels, test_id, dl_model, args.count,
+                         args.k, m_hyperparameters, l_hyperparameters,
+                         regularization, verbose=args.verbose)
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
 
 
 def process_dl_custom_model(args):
