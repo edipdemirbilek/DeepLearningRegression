@@ -184,8 +184,8 @@ def process_dl_random_model(args):
             run_dl_model(attributes, labels, test_id, dl_model, args.count,
                          args.k, m_hyperparameters, l_hyperparameters,
                          regularization, verbose=args.verbose)
-        except:
-            print("Unexpected error:", sys.exc_info()[0])
+        except Exception as e:
+            print(e)
 
 
 def process_dl_custom_model(args):

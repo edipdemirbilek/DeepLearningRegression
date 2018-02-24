@@ -5,6 +5,8 @@
 from numpy import array, zeros, concatenate
 from sklearn.metrics import mean_squared_error
 
+import numpy as np
+
 import scipy as sp
 
 
@@ -116,6 +118,10 @@ def compute_metrics(y_test_normalized, prediction_normalized,
     print("Epsilon RMSE: %.3f" % rmse_epsilon)
     print("     Pearson: %.3f" % r_value)
 
+    if r_value < 0.84 or is_nan(r_value):
+        raise ValueError("Pearson result is less than 0.85 or NaN. " +
+                         " Skipping this configuration.")
+
     return rmse, rmse_epsilon, r_value, p_value
 
 
@@ -155,3 +161,7 @@ def compute_and_accumulate_results_from_counts(
     pearson_all_counts.append(r_value)
 
     return rmse_all_counts, rmse_epsilon_all_counts, pearson_all_counts
+
+
+def is_nan(x):
+    return (x is np.nan or x != x)
