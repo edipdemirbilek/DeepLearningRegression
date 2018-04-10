@@ -24,6 +24,9 @@ from keras.layers.core import Dense
 from keras.layers import Dropout
 from keras import regularizers
 
+from keras.callbacks import TensorBoard
+import tensorflow as tf
+
 from utils.dataset_util import prepare_data, unpack_partitioned_data, \
     substitute_training_data
 from utils.common_util import accumulate_results_from_folds, compute_metrics, \
@@ -456,8 +459,11 @@ def train_dl_model(dl_model, x_train, y_train, m_hyperparameters):
     f_type, n_features, n_layers, n_epoch, n_batch, loss, optimizer = \
         unpack_model_hyperparameters(m_hyperparameters)
 
+    tensorboard = TensorBoard(log_dir='/Users/edip.demirbilek/PrivateProjects/MultimediaRegressionModels', write_graph=True, write_images=False)
+
+
     history = dl_model.fit(
-        x_train, y_train, batch_size=n_batch, epochs=n_epoch, verbose=0)
+        x_train, y_train, batch_size=n_batch, epochs=n_epoch, verbose=0, callbacks=[tensorboard])
 
     return history
 

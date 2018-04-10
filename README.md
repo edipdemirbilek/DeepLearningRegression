@@ -11,3 +11,6 @@ $ python regression_models.py --m_type=dl --random --count=3
 for custom models
 $ python regression_models.py --m_type=dl --model_id=4 --count=3
 
+To view tensorboard, run
+
+$ tensorboard --logdir=/Users/edip.demirbilek/PrivateProjects/MultimediaRegressionModels

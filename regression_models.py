@@ -44,8 +44,13 @@ import sys
 from numpy import power
 from numpy.random import rand, uniform
 
+import pydot
+import graphviz
+
 from keras.optimizers import SGD, RMSprop, Adagrad, Adadelta, Adam, Adamax, \
     Nadam
+
+from keras.utils import plot_model
 
 from utils.dataset_util import load_dataset
 from utils.dl_util import pack_regularization, pack_layer_hyperparameters, \
@@ -214,6 +219,8 @@ def process_dl_custom_model(args):
 
     dl_model, n_features, n_layers, n_epoch, n_batch_size, regularization, \
         loss, optimizer = custom_dl_models[args.model_id]()
+
+    plot_model(dl_model, to_file='model_'+str(args.model_id)+'.png', show_shapes=True)
 
     attributes, labels = load_dataset("sorted_subjects", n_features)
 
