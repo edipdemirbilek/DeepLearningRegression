@@ -118,8 +118,8 @@ def compute_metrics(y_test_normalized, prediction_normalized,
     print("Epsilon RMSE: %.3f" % rmse_epsilon)
     print("     Pearson: %.3f" % r_value)
 
-    if r_value < 0.84 or is_nan(r_value):
-        raise ValueError("Pearson result is less than 0.85 or NaN. " +
+    if r_value < 0.85 or is_nan(r_value):
+        raise ValueError("Pearson result for fold is less than 0.85 or NaN. " +
                          " Skipping this configuration.")
 
     return rmse, rmse_epsilon, r_value, p_value
@@ -159,6 +159,10 @@ def compute_and_accumulate_results_from_counts(
     rmse_all_counts.append(rmse)
     rmse_epsilon_all_counts.append(rmse_epsilon)
     pearson_all_counts.append(r_value)
+
+    if r_value < 0.90 or is_nan(r_value):
+        raise ValueError("Pearson result for count is less than 0.90 or NaN. " +
+                         " Skipping this configuration.")
 
     return rmse_all_counts, rmse_epsilon_all_counts, pearson_all_counts
 

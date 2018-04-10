@@ -55,8 +55,7 @@ from utils.rf_util import create_rf_model, run_rf_model, save_rf_header, \
 from utils.fe_util import generate_features
 from utils.parser_util import build_parser
 from models.dl_models import dl_model_1, dl_model_2, dl_model_3, \
-    dl_model_4, dl_model_5, dl_model_6, dl_model_7, dl_model_8, dl_model_9, \
-    dl_model_10
+    dl_model_4, dl_model_5, dl_model_6
 
 
 def get_optimizer(optimizer):
@@ -208,29 +207,24 @@ def process_dl_custom_model(args):
                         3: dl_model_3,
                         4: dl_model_4,
                         5: dl_model_5,
-                        6: dl_model_6,
-                        7: dl_model_7,
-                        8: dl_model_8,
-                        9: dl_model_9,
-                        10: dl_model_10}
+                        6: dl_model_6}
 
     test_id = "dl_model_"+str(args.model_id)
     save_dl_header()
 
-    n_features = args.n_features if args.n_features else 125
+    dl_model, n_features, n_layers, n_epoch, n_batch_size, regularization, \
+        loss, optimizer = custom_dl_models[args.model_id]()
 
-    attributes, labels = load_dataset("sorted", n_features)
-
-    dl_model, n_layers, n_epoch, n_batch_size, regularization \
-        = custom_dl_models[args.model_id](n_features)
+    attributes, labels = load_dataset("sorted_subjects", n_features)
 
     m_hyperparameters = \
-        pack_model_hyperparameters('sorted', n_features, n_layers, n_epoch,
-                                   n_batch_size, loss='mean_squared_error',
-                                   optimizer = get_optimizer(optimizer='Adadelta'))
+        pack_model_hyperparameters('sorted_subjects', n_features, n_layers,
+                                   n_epoch, n_batch_size, loss=loss,
+                                   optimizer = optimizer)
+
     l_hyperparameters = pack_layer_hyperparameters(
-            h_activation='tanh', o_activation='softplus',
-            kernel_initializer='random_uniform')
+            h_activation=None, o_activation=None,
+            kernel_initializer=None)
 
     run_dl_model(
         attributes, labels, test_id, dl_model, args.count, args.k,

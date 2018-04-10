@@ -12,7 +12,7 @@ Todo:
 from keras.models import Sequential
 from keras.layers import Dropout
 from keras.layers.core import Dense
-from keras.optimizers import Adadelta
+from keras.optimizers import Adadelta, Adamax, Nadam, RMSprop, SGD
 from keras import regularizers
 
 from utils.dl_util import pack_regularization
@@ -33,418 +33,39 @@ def add_output_layer_and_compile(dl_model):
     return dl_model
 
 
-def dl_model_1(n_features):
+def dl_model_1():
     """
-    Model 1 -- Fully connected layers
-        loss -- 'Mean Square Error'mse''
-        optimizer -- Adadelta
-        metrics -- ['accuracy']
+    Test Id: 530.0989173665997305,
+    Feature Type: sorted_subjects,
+    Num Features: 9,
+    Num Layers: 2,
+    Num Epochs: 783,
+    Num Batch Size: 120,
+    Loss: binary_crossentropy,
+    Optimizer: Nadam,
+    Dropout: False, k_l2: False, k_l1: False, a_l2: False, a_l1: False
+
+    Random Search Result
+    test_id, f_type, n_features, n_layers, n_epoch, n_batch, rmse, rmse_epsilon, pearson, elapsed_time, dropout, k_l2, k_l1, a_l2, a_l1, Count
+    530.0989173665997305, sorted_subjects,9,2,783,120,0.36392871695331613,0.21367863183310884,0.927363051328573,00:19:32,False,False,False,False,False
+
     Layers
         Layer 0 -- Input Layer
             #nodes: n_features
         Layer 1 -- Dense
-            #nodes: 100,
-            activation: 'tanh',
-            kernel_initializer: 'uniform',
-            kernel_regularizer: l1 value 0.000772747534144
+            #nodes: 2,
+            h_activation: 'softsign',
+            kernel_initializer: 'glorot_normal',
         Layer 2 -- Dense
-            #nodes: 54
-            activation: 'tanh',
-            kernel_regularizer: l1 value 0.00119620962974
-        Layer 3 -- Dense
-            #nodes: 4
-            activation: 'tanh',
-            kernel_regularizer: l1 value 0.000136272407271
-        Layer 4 -- Dense, Output
-            #nodes: 1
-            activation: 'softplus'
-
-    Arguments:
-        n_features -- Number of features, int
-
-    Returns:
-        dl_model -- Deep Learning model of type keras.models.Sequential
-        n_layers -- Number of layers, int value 3
-        n_epoch -- Number og epochs, int value 644
-        n_batch_size -- Batch size, int value 120
-        regularization -- Dictionary of shape
-            {
-                'dropout': False,
-                'k_l2': False,
-                'k_l1': True,
-                'a_l2': False,
-                'a_l1': False,
-            }
-    """
-    print("DL model 1")
-    n_layers = 3
-    n_epoch = 644
-    n_batch_size = 120
-
-    dropout = False
-    k_l2 = False
-    k_l1 = True
-    a_l2 = False
-    a_l1 = False
-    regularization = pack_regularization(
-        dropout, k_l2, k_l1, a_l2, a_l1)
-
-    dl_model = Sequential()
-
-    dl_model.add(Dense(100, input_dim=n_features, activation='tanh',
-                       kernel_initializer='uniform',
-                       kernel_regularizer=regularizers.l1(0.000772747534144),
-                       activity_regularizer=None))
-
-    dl_model.add(Dense(54, activation='tanh',
-                       kernel_regularizer=regularizers.l1(0.00119620962974),
-                       activity_regularizer=None))
-    dl_model.add(Dense(4, activation='tanh',
-                       kernel_regularizer=regularizers.l1(0.000136272407271),
-                       activity_regularizer=None))
-
-    return add_output_layer_and_compile(dl_model), n_layers, n_epoch, \
-        n_batch_size, regularization
-
-
-def dl_model_2(n_features):
-    """
-    Model 2 -- Fully connected layers
-        loss -- 'Mean Square Error'mse''
-        optimizer -- Adadelta
-        metrics -- ['accuracy']
-    Layers
-        Layer 0 -- Input Layer
-            #nodes: n_features
-        Layer 1 -- Dense
-            #nodes: 93,
-            activation: 'tanh',
-            kernel_initializer: 'uniform',
-            kernel_regularizer: l1 value 0.00291949389517
-        Layer 2 -- Dense
-            #nodes: 61
-            activation: 'tanh',
-            kernel_regularizer: l1 value 0.000558804570517
-        Layer 3 -- Dense
-            #nodes: 14
-            activation: 'tanh',
-            kernel_regularizer: l1 value 0.000814892122429
-        Layer 5 -- Dense
-            #nodes: 6
-            activation: 'tanh',
-            kernel_regularizer: l1 value 0.00418878188865
-        Layer 5 -- Dense, Output
-            #nodes: 1
-            activation: 'softplus'
-
-    Arguments:
-        n_features -- Number of features, int
-
-    Returns:
-        dl_model -- Deep Learning model of type keras.models.Sequential
-        n_layers -- Number of layers, int value 3
-        n_epoch -- Number og epochs, int value 644
-        n_batch_size -- Batch size, int value 120
-        regularization -- Dictionary of shape
-            {
-                'dropout': False,
-                'k_l2': False,
-                'k_l1': True,
-                'a_l2': False,
-                'a_l1': False,
-            }
-    """
-    print("DL model 2")
-    n_layers = 4
-    n_epoch = 934
-    n_batch_size = 120
-
-    dropout = False
-    k_l2 = False
-    k_l1 = True
-    a_l2 = False
-    a_l1 = False
-    regularization = pack_regularization(
-        dropout, k_l2, k_l1, a_l2, a_l1)
-
-    dl_model = Sequential()
-
-    dl_model.add(Dense(93, input_dim=n_features, activation='tanh',
-                       kernel_initializer='uniform',
-                       kernel_regularizer=regularizers.l1(0.00291949389517),
-                       activity_regularizer=None))
-
-    dl_model.add(Dense(61, activation='tanh',
-                       kernel_regularizer=regularizers.l1(0.000558804570517),
-                       activity_regularizer=None))
-    dl_model.add(Dense(14, activation='tanh',
-                       kernel_regularizer=regularizers.l1(0.000814892122429),
-                       activity_regularizer=None))
-    dl_model.add(Dense(6, activation='tanh',
-                       kernel_regularizer=regularizers.l1(0.00418878188865),
-                       activity_regularizer=None))
-
-    return add_output_layer_and_compile(dl_model), n_layers, n_epoch, \
-        n_batch_size, regularization
-
-
-def dl_model_3(n_features):
-    """
-    Model 3 -- Fully connected layers
-        loss -- 'Mean Square Error'mse''
-        optimizer -- Adadelta
-        metrics -- ['accuracy']
-    Layers
-        Layer 0 -- Input Layer
-            #nodes: n_features
-        Layer 1 -- Dense
-            #nodes: 10,
-            activation: 'tanh',
-            kernel_initializer: 'uniform',
-            kernel_regularizer: l1 value 0.00212630915942
-        Layer 2 -- Dense, Output
-            #nodes: 1
-            activation: 'softplus'
-
-    Arguments:
-        n_features -- Number of features, int
-
-    Returns:
-        dl_model -- Deep Learning model of type keras.models.Sequential
-        n_layers -- Number of layers, int value 3
-        n_epoch -- Number og epochs, int value 644
-        n_batch_size -- Batch size, int value 120
-        regularization -- Dictionary of shape
-            {
-                'dropout': False,
-                'k_l2': False,
-                'k_l1': True,
-                'a_l2': False,
-                'a_l1': False,
-            }
-    """
-    print("DL model 3")
-    n_layers = 1
-    n_epoch = 4194
-    n_batch_size = 120
-
-    dropout = False
-    k_l2 = False
-    k_l1 = True
-    a_l2 = False
-    a_l1 = False
-    regularization = pack_regularization(
-        dropout, k_l2, k_l1, a_l2, a_l1)
-
-    dl_model = Sequential()
-
-    dl_model.add(Dense(10, input_dim=n_features, activation='tanh',
-                       kernel_initializer='uniform',
-                       kernel_regularizer=regularizers.l1(0.00212630915942),
-                       activity_regularizer=None))
-
-    return add_output_layer_and_compile(dl_model), n_layers, n_epoch, \
-        n_batch_size, regularization
-
-
-def dl_model_4(n_features):
-    """
-    Model 4 -- Fully connected layers
-        loss -- 'Mean Square Error'mse''
-        optimizer -- Adadelta
-        metrics -- ['accuracy']
-    Layers
-        Layer 0 -- Input Layer
-            #nodes: n_features
-        Layer 1 -- Dense
-            #nodes: 108,
-            activation: 'tanh',
-            kernel_initializer: 'uniform',
-            kernel_regularizer: l1 value 0.000598295679733
-        Layer 2 -- Dense
-            #nodes: 25
-            activation: 'tanh',
-            kernel_regularizer: l1 value 0.000519263706192
-        Layer 3 -- Dense
-            #nodes: 6
-            activation: 'tanh',
-            kernel_regularizer: l1 value 0.000358395014507
-        Layer 4 -- Dense
-            #nodes: 3
-            activation: 'tanh',
-            kernel_regularizer: l1 value 0.00208375309026
-        Layer 5 -- Dense, Output
-            #nodes: 1
-            activation: 'softplus'
-
-    Arguments:
-        n_features -- Number of features, int
-
-    Returns:
-        dl_model -- Deep Learning model of type keras.models.Sequential
-        n_layers -- Number of layers, int value 3
-        n_epoch -- Number og epochs, int value 644
-        n_batch_size -- Batch size, int value 120
-        regularization -- Dictionary of shape
-            {
-                'dropout': False,
-                'k_l2': False,
-                'k_l1': True,
-                'a_l2': False,
-                'a_l1': False,
-            }
-    """
-    print("DL model 4")
-    n_layers = 4
-    n_epoch = 664
-    n_batch_size = 120
-
-    dropout = False
-    k_l2 = False
-    k_l1 = True
-    a_l2 = False
-    a_l1 = False
-    regularization = pack_regularization(
-        dropout, k_l2, k_l1, a_l2, a_l1)
-
-    dl_model = Sequential()
-
-    dl_model.add(Dense(108, input_dim=n_features, activation='tanh',
-                       kernel_initializer='uniform',
-                       kernel_regularizer=regularizers.l1(0.000598295679733),
-                       activity_regularizer=None))
-
-    dl_model.add(Dense(25, activation='tanh',
-                       kernel_regularizer=regularizers.l1(0.000519263706192),
-                       activity_regularizer=None))
-    dl_model.add(Dense(6, activation='tanh',
-                       kernel_regularizer=regularizers.l1(0.000358395014507),
-                       activity_regularizer=None))
-    dl_model.add(Dense(3, activation='tanh',
-                       kernel_regularizer=regularizers.l1(0.00208375309026),
-                       activity_regularizer=None))
-
-    return add_output_layer_and_compile(dl_model), n_layers, n_epoch, \
-        n_batch_size, regularization
-
-
-def dl_model_5(n_features):
-    """
-    Model 5 -- Fully connected layers
-        loss -- 'Mean Square Error'mse''
-        optimizer -- Adadelta
-        metrics -- ['accuracy']
-    Layers
-        Layer 0 -- Input Layer
-            #nodes: n_features
-        Layer 1 -- Dense
-            #nodes: 15,
-            activation: 'tanh',
-            kernel_initializer: 'uniform',
-            kernel_regularizer: l1 value 0.000146971236117
-        Layer 2 -- Dense
-            #nodes: 8
-            activation: 'tanh',
-            kernel_regularizer: None
-        Layer 3 -- Dense
-            #nodes: 8
-            activation: 'tanh',
-            kernel_regularizer: l1 value 0.0190282049554
-        Layer 4 -- Dense
-            #nodes: 7
-            activation: 'tanh',
-            kernel_regularizer: l1 value 0.000663034551678
-        Layer 5 -- Dense
-            #nodes: 6
-            activation: 'tanh',
-            kernel_regularizer: l1 value None
-            dropout: rate value 0.516280788566578
-        Layer 6 -- Dense, Output
-            #nodes: 1
-            activation: 'softplus'
-
-    Arguments:
-        n_features -- Number of features, int
-
-    Returns:
-        dl_model -- Deep Learning model of type keras.models.Sequential
-        n_layers -- Number of layers, int value 3
-        n_epoch -- Number og epochs, int value 644
-        n_batch_size -- Batch size, int value 120
-        regularization -- Dictionary of shape
-            {
-                'dropout': False,
-                'k_l2': False,
-                'k_l1': True,
-                'a_l2': False,
-                'a_l1': False,
-            }
-    """
-    print("DL model 5")
-    n_layers = 5
-    n_epoch = 4365
-    n_batch_size = 120
-
-    dropout = True
-    k_l2 = False
-    k_l1 = True
-    a_l2 = False
-    a_l1 = False
-    regularization = pack_regularization(
-        dropout, k_l2, k_l1, a_l2, a_l1)
-
-    dl_model = Sequential()
-
-    dl_model.add(Dense(15, input_dim=n_features, activation='tanh',
-                       kernel_initializer='uniform',
-                       kernel_regularizer=regularizers.l1(0.000146971236117),
-                       activity_regularizer=None))
-
-    dl_model.add(Dense(8, activation='tanh',
-                       kernel_regularizer=None,
-                       activity_regularizer=None))
-    dl_model.add(Dense(8, activation='tanh',
-                       kernel_regularizer=regularizers.l1(0.0190282049554),
-                       activity_regularizer=None))
-    dl_model.add(Dense(7, activation='tanh',
-                       kernel_regularizer=regularizers.l1(0.000663034551678),
-                       activity_regularizer=None))
-    dl_model.add(Dropout(rate=0.516280788566578, noise_shape=None, seed=None))
-    dl_model.add(Dense(6, activation='tanh',
-                       kernel_regularizer=None,
-                       activity_regularizer=None))
-
-    return add_output_layer_and_compile(dl_model), n_layers, n_epoch, \
-        n_batch_size, regularization
-
-
-def dl_model_6(n_features):
-    """
-    Model 6 -- Fully connected layers
-        loss -- 'Mean Square Error'mse''
-        optimizer -- Adadelta
-        metrics -- ['accuracy']
-    Layers
-        Layer 0 -- Input Layer
-            #nodes: n_features
-        Layer 1 -- Dense
-            #nodes: 12,
-            activation: 'tanh',
-            kernel_initializer: 'uniform',
-            kernel_regularizer: l1 value 0.012871345521
-        Layer 2 -- Dense
-            #nodes: 6
-            activation: 'tanh',
-            kernel_regularizer: l1 value 0.00200697504526
+            #nodes: 2
+            activation: 'softsign',
         Layer 3 -- Dense, Output
             #nodes: 1
-            activation: 'softplus'
-
-    Arguments:
-        n_features -- Number of features, int
+            activation: 'relu'
 
     Returns:
         dl_model -- Deep Learning model of type keras.models.Sequential
+        n_features - Number of features, int
         n_layers -- Number of layers, int value 3
         n_epoch -- Number og epochs, int value 644
         n_batch_size -- Batch size, int value 120
@@ -457,65 +78,301 @@ def dl_model_6(n_features):
                 'a_l1': False,
             }
     """
-    print("DL model 6")
+    print("Custom DL model 1")
+
+    n_features = 9
     n_layers = 2
-    n_epoch = 4905
+    n_epoch = 783
     n_batch_size = 120
 
     dropout = False
     k_l2 = False
-    k_l1 = True
+    k_l1 = False
     a_l2 = False
     a_l1 = False
     regularization = pack_regularization(
         dropout, k_l2, k_l1, a_l2, a_l1)
 
+    loss = 'binary_crossentropy'
+    optimizer = Nadam()
+
     dl_model = Sequential()
 
-    dl_model.add(Dense(12, input_dim=n_features, activation='tanh',
-                       kernel_initializer='uniform',
-                       kernel_regularizer=regularizers.l1(0.012871345521),
-                       activity_regularizer=None))
+    dl_model.add(Dense(2, input_dim=n_features, activation='softsign',
+                       kernel_initializer='glorot_normal'))
 
-    dl_model.add(Dense(6, activation='tanh',
-                       kernel_regularizer=regularizers.l1(0.00200697504526),
-                       activity_regularizer=None))
+    dl_model.add(Dense(2, activation='softsign'))
 
-    return add_output_layer_and_compile(dl_model), n_layers, n_epoch, \
-        n_batch_size, regularization
+    dl_model.add(Dense(1, activation='relu'))
+    dl_model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
 
+    return dl_model, n_features, n_layers, n_epoch, n_batch_size, \
+        regularization, loss, optimizer
 
-def dl_model_7(n_features):
+def dl_model_2():
     """
-    Model 7 -- Fully connected layers
-        loss -- 'Mean Square Error'mse''
-        optimizer -- Adadelta
-        metrics -- ['accuracy']
+
+    Test Id: 250.03366711196429795,
+    Feature Type: sorted_subjects,
+    Num Features: 17,
+    Num Layers: 2,
+    Num Epochs: 412,
+    Num Batch Size: 120,
+    Loss: mean_absolute_error,
+    Optimizer: <keras.optimizers.Adadelta object at 0x126343f28>,
+    Dropout: False, k_l2: False, k_l1: False, a_l2: False, a_l1: False
+
+    Random Search Result
+    test_id, f_type, n_features, n_layers, n_epoch, n_batch, rmse, rmse_epsilon, pearson, elapsed_time, dropout, k_l2, k_l1, a_l2, a_l1, Count
+    250.03366711196429795, sorted_subjects,17,2,412,120,0.3965292041268971,0.24324761507356363,0.9271592079243844,00:10:42,False,False,False,False,False
+
+   Layers
+        Layer 0 -- Input Layer
+            #nodes: n_features
+        Layer 1 -- Dense
+            #nodes: 3,
+            h_activation: 'softplus',
+            kernel_initializer: 'orthogonal',
+        Layer 2 -- Dense
+            #nodes: 2
+            activation: 'softplus',
+        Layer 3 -- Dense, Output
+            #nodes: 1
+            activation: 'hard_sigmoid'
+
+    Returns:
+        dl_model -- Deep Learning model of type keras.models.Sequential
+        n_features - Number of features, int
+        n_layers -- Number of layers, int value 3
+        n_epoch -- Number og epochs, int value 644
+        n_batch_size -- Batch size, int value 120
+        regularization -- Dictionary of shape
+            {
+                'dropout': False,
+                'k_l2': False,
+                'k_l1': True,
+                'a_l2': False,
+                'a_l1': False,
+            }
+    """
+    print("Custom DL model 1")
+
+    n_features = 17
+    n_layers = 2
+    n_epoch = 412
+    n_batch_size = 120
+
+    dropout = False
+    k_l2 = False
+    k_l1 = False
+    a_l2 = False
+    a_l1 = False
+    regularization = pack_regularization(
+        dropout, k_l2, k_l1, a_l2, a_l1)
+
+    loss = 'mean_absolute_error'
+    optimizer = Adadelta()
+
+    dl_model = Sequential()
+
+    dl_model.add(Dense(3, input_dim=n_features, activation='softplus',
+                       kernel_initializer='orthogonal'))
+
+    dl_model.add(Dense(2, activation='softplus'))
+
+    dl_model.add(Dense(1, activation='hard_sigmoid'))
+    dl_model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
+
+    return dl_model, n_features, n_layers, n_epoch, n_batch_size, \
+        regularization, loss, optimizer
+
+def dl_model_3():
+    """
+
+    Test Id: 110.7219142396918702,
+    Feature Type: sorted_subjects,
+    Num Features: 8,
+    Num Layers: 2,
+    Num Epochs: 749,
+    Num Batch Size: 120,
+    Loss: binary_crossentropy,
+    Optimizer: <keras.optimizers.Adadelta object at 0x12a100940>,
+    Dropout: False, k_l2: False, k_l1: False, a_l2: False, a_l1: False
+
+    Random Search Result
+    test_id, f_type, n_features, n_layers, n_epoch, n_batch, rmse, rmse_epsilon, pearson, elapsed_time, dropout, k_l2, k_l1, a_l2, a_l1, Count
+    110.7219142396918702, sorted_subjects,8,2,749,120,0.367103318272342,0.21427375171379326,0.9268053958866134,00:14:50,False,False,False,False,False
+
+    Layers
+        Layer 0 -- Input Layer
+            #nodes: n_features
+        Layer 1 -- Dense
+            #nodes: 4,
+            h_activation: 'relu',
+            kernel_initializer: 'truncated_normal',
+        Layer 2 -- Dense
+            #nodes: 2
+            activation: 'relu',
+        Layer 3 -- Dense, Output
+            #nodes: 1
+            activation: 'sigmoid'
+
+    Returns:
+        dl_model -- Deep Learning model of type keras.models.Sequential
+        n_features - Number of features, int
+        n_layers -- Number of layers, int value 3
+        n_epoch -- Number og epochs, int value 644
+        n_batch_size -- Batch size, int value 120
+        regularization -- Dictionary of shape
+            {
+                'dropout': False,
+                'k_l2': False,
+                'k_l1': True,
+                'a_l2': False,
+                'a_l1': False,
+            }
+    """
+    print("Custom DL model 1")
+
+    n_features = 8
+    n_layers = 2
+    n_epoch = 749
+    n_batch_size = 120
+
+    dropout = False
+    k_l2 = False
+    k_l1 = False
+    a_l2 = False
+    a_l1 = False
+    regularization = pack_regularization(
+        dropout, k_l2, k_l1, a_l2, a_l1)
+
+    loss = 'binary_crossentropy'
+    optimizer = Adadelta()
+
+    dl_model = Sequential()
+
+    dl_model.add(Dense(4, input_dim=n_features, activation='relu',
+                       kernel_initializer='truncated_normal'))
+
+    dl_model.add(Dense(2, activation='relu'))
+
+    dl_model.add(Dense(1, activation='sigmoid'))
+    dl_model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
+
+    return dl_model, n_features, n_layers, n_epoch, n_batch_size, \
+        regularization, loss, optimizer
+
+def dl_model_4():
+    """
+    Test Id: 180.5254900038280402,
+    Feature Type: sorted_subjects,
+    Num Features: 12,
+    Num Layers: 2,
+    Num Epochs: 415,
+    Num Batch Size: 120,
+    Loss: mean_squared_error,
+    Optimizer: <keras.optimizers.RMSprop object at 0x130193fd0>,
+    Dropout: False, k_l2: False, k_l1: False, a_l2: False, a_l1: False
+
+    Random Search Result
+    test_id, f_type, n_features, n_layers, n_epoch, n_batch, rmse, rmse_epsilon, pearson, elapsed_time, dropout, k_l2, k_l1, a_l2, a_l1, Count
+    180.5254900038280402, sorted_subjects,12,2,415,120,0.371165772417391,0.22013048287370057,0.9249325717307784,00:08:52,False,False,False,False,False
+
+    Layers
+        Layer 0 -- Input Layer
+            #nodes: n_features
+        Layer 1 -- Dense
+            #nodes: 6,
+            h_activation: 'sigmoid',
+            kernel_initializer: 'orthogonal',
+        Layer 2 -- Dense
+            #nodes: 2
+            activation: 'sigmoid',
+        Layer 3 -- Dense, Output
+            #nodes: 1
+            activation: 'hard_sigmoid'
+
+    Returns:
+        dl_model -- Deep Learning model of type keras.models.Sequential
+        n_features - Number of features, int
+        n_layers -- Number of layers, int value 3
+        n_epoch -- Number og epochs, int value 644
+        n_batch_size -- Batch size, int value 120
+        regularization -- Dictionary of shape
+            {
+                'dropout': False,
+                'k_l2': False,
+                'k_l1': True,
+                'a_l2': False,
+                'a_l1': False,
+            }
+    """
+    print("Custom DL model 4")
+
+    n_features = 12
+    n_layers = 2
+    n_epoch = 415
+    n_batch_size = 120
+
+    dropout = False
+    k_l2 = False
+    k_l1 = False
+    a_l2 = False
+    a_l1 = False
+    regularization = pack_regularization(
+        dropout, k_l2, k_l1, a_l2, a_l1)
+
+    loss = 'mean_squared_error'
+    optimizer = RMSprop()
+
+    dl_model = Sequential()
+
+    dl_model.add(Dense(6, input_dim=n_features, activation='sigmoid',
+                       kernel_initializer='orthogonal'))
+
+    dl_model.add(Dense(2, activation='sigmoid'))
+
+    dl_model.add(Dense(1, activation='hard_sigmoid'))
+    dl_model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
+
+    return dl_model, n_features, n_layers, n_epoch, n_batch_size, \
+        regularization, loss, optimizer
+
+
+def dl_model_5():
+    """
+    Test Id: 50.030917668555019318,
+    Feature Type: sorted_subjects,
+    Num Features: 16,
+    Num Layers: 2,
+    Num Epochs: 967,
+    Num Batch Size: 120,
+    Loss: mean_squared_error,
+    Optimizer: <keras.optimizers.RMSprop object at 0x11a3bebe0>,
+    Dropout: False, k_l2: False, k_l1: False, a_l2: False, a_l1: False
+
+    Random Search Result
+    test_id, f_type, n_features, n_layers, n_epoch, n_batch, rmse, rmse_epsilon, pearson, elapsed_time, dropout, k_l2, k_l1, a_l2, a_l1, Count
+    50.030917668555019318, sorted_subjects,16,2,967,120,0.3573825052842691,0.20378077360461308,0.9309577204930928,01:03:59,False,False,False,False,False
+
     Layers
         Layer 0 -- Input Layer
             #nodes: n_features
         Layer 1 -- Dense
             #nodes: 3,
-            activation: 'tanh',
-            kernel_initializer: 'uniform',
-            kernel_regularizer: l1 value 0.00137064637093
+            h_activation: 'sigmoid',
+            kernel_initializer: 'orthogonal',
         Layer 2 -- Dense
-            #nodes: 3
-            activation: 'tanh',
-            kernel_regularizer: l1 value 0.000118085542081
-        Layer 3 -- Dense
             #nodes: 2
-            activation: 'tanh',
-            kernel_regularizer: l1 value 0.00234570316304
-        Layer 4 -- Dense, Output
+            activation: 'sigmoid',
+        Layer 3 -- Dense, Output
             #nodes: 1
-            activation: 'softplus'
-
-    Arguments:
-        n_features -- Number of features, int
+            activation: 'hard_sigmoid'
 
     Returns:
         dl_model -- Deep Learning model of type keras.models.Sequential
+        n_features - Number of features, int
         n_layers -- Number of layers, int value 3
         n_epoch -- Number og epochs, int value 644
         n_batch_size -- Batch size, int value 120
@@ -528,125 +385,70 @@ def dl_model_7(n_features):
                 'a_l1': False,
             }
     """
-    print("DL model 7")
-    n_layers = 3
-    n_epoch = 4441
+    print("Custom DL model 1")
+
+    n_features = 16
+    n_layers = 2
+    n_epoch = 967
     n_batch_size = 120
 
     dropout = False
     k_l2 = False
-    k_l1 = True
+    k_l1 = False
     a_l2 = False
     a_l1 = False
     regularization = pack_regularization(
         dropout, k_l2, k_l1, a_l2, a_l1)
 
+    loss = 'mean_squared_error'
+    optimizer = RMSprop()
+
     dl_model = Sequential()
 
-    dl_model.add(Dense(3, input_dim=n_features, activation='tanh',
-                       kernel_initializer='uniform',
-                       kernel_regularizer=regularizers.l1(0.00137064637093),
-                       activity_regularizer=None))
+    dl_model.add(Dense(3, input_dim=n_features, activation='sigmoid',
+                       kernel_initializer='orthogonal'))
 
-    dl_model.add(Dense(3, activation='tanh',
-                       kernel_regularizer=regularizers.l1(0.000118085542081),
-                       activity_regularizer=None))
+    dl_model.add(Dense(2, activation='sigmoid'))
 
-    dl_model.add(Dense(2, activation='tanh',
-                       kernel_regularizer=regularizers.l1(0.00234570316304),
-                       activity_regularizer=None))
+    dl_model.add(Dense(1, activation='hard_sigmoid'))
+    dl_model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
 
-    return add_output_layer_and_compile(dl_model), n_layers, n_epoch, \
-        n_batch_size, regularization
+    return dl_model, n_features, n_layers, n_epoch, n_batch_size, \
+        regularization, loss, optimizer
 
-
-def dl_model_8(n_features):
+def dl_model_6():
     """
-    Model 8 -- Fully connected layers
-        loss -- 'Mean Square Error'mse''
-        optimizer -- Adadelta
-        metrics -- ['accuracy']
+    Test Id: 100.982894254673383,
+    Feature Type: sorted_subjects,
+    Num Features: 15,
+    Num Layers: 2,
+    Num Epochs: 508,
+    Num Batch Size: 120,
+    Loss: mean_squared_error,
+    Optimizer: <keras.optimizers.RMSprop object at 0x1212fde80>,
+    Dropout: False, k_l2: False, k_l1: False, a_l2: False, a_l1: False
+
+    Random Search Result
+    test_id, f_type, n_features, n_layers, n_epoch, n_batch, rmse, rmse_epsilon, pearson, elapsed_time, dropout, k_l2, k_l1, a_l2, a_l1, Count
+    100.982894254673383, sorted_subjects,15,2,508,120,0.35972264439460905,0.20674280294135497,0.9304692512000209,00:39:51,False,False,False,False,False
+
     Layers
         Layer 0 -- Input Layer
             #nodes: n_features
         Layer 1 -- Dense
-            #nodes: 32,
-            activation: 'tanh',
-            kernel_initializer: 'uniform',
-            kernel_regularizer: l1_l2 value 0.00282481903628
-        Layer 2 -- Dense, Output
-            #nodes: 1
-            activation: 'softplus'
-
-    Arguments:
-        n_features -- Number of features, int
-
-    Returns:
-        dl_model -- Deep Learning model of type keras.models.Sequential
-        n_layers -- Number of layers, int value 3
-        n_epoch -- Number og epochs, int value 644
-        n_batch_size -- Batch size, int value 120
-        regularization -- Dictionary of shape
-            {
-                'dropout': False,
-                'k_l2': False,
-                'k_l1': True,
-                'a_l2': False,
-                'a_l1': False,
-            }
-    """
-    print("DL model 8")
-    n_layers = 1
-    n_epoch = 7756
-    n_batch_size = 120
-
-    dropout = False
-    k_l2 = True
-    k_l1 = True
-    a_l2 = False
-    a_l1 = False
-    regularization = pack_regularization(
-        dropout, k_l2, k_l1, a_l2, a_l1)
-
-    dl_model = Sequential()
-
-    dl_model.add(Dense(32, input_dim=n_features, activation='tanh',
-                       kernel_initializer='uniform',
-                       kernel_regularizer=regularizers.l1_l2(0.00282481903628),
-                       activity_regularizer=None))
-
-    return add_output_layer_and_compile(dl_model), n_layers, n_epoch, \
-        n_batch_size, regularization
-
-
-def dl_model_9(n_features):
-    """
-    Model 9 -- Fully connected layers
-        loss -- 'Mean Square Error'mse''
-        optimizer -- Adadelta
-        metrics -- ['accuracy']
-    Layers
-        Layer 0 -- Input Layer
-            #nodes: n_features
-        Layer 1 -- Dense
-            #nodes: 55,
-            activation: 'tanh',
-            kernel_initializer: 'uniform',
-            kernel_regularizer: l2 value 0.00114660582694
+            #nodes: 8,
+            h_activation: 'sigmoid',
+            kernel_initializer: 'glorot_normal',
         Layer 2 -- Dense
-            #nodes: 9,
-            activation: 'tanh',
-            kernel_initializer: 'uniform',
-            kernel_regularizer: l2 value 0.000193253640832
+            #nodes: 4
+            activation: 'sigmoid',
         Layer 3 -- Dense, Output
             #nodes: 1
-            activation: 'softplus'
-
-    Arguments:
-        n_features -- Number of features, int
+            activation: 'hard_sigmoid'
 
     Returns:
         dl_model -- Deep Learning model of type keras.models.Sequential
+        n_features - Number of features, int
         n_layers -- Number of layers, int value 3
         n_epoch -- Number og epochs, int value 644
         n_batch_size -- Batch size, int value 120
@@ -659,89 +461,33 @@ def dl_model_9(n_features):
                 'a_l1': False,
             }
     """
-    print("DL model 9")
+    print("Custom DL model 1")
+
+    n_features = 15
     n_layers = 2
-    n_epoch = 3847
+    n_epoch = 508
     n_batch_size = 120
 
     dropout = False
-    k_l2 = True
+    k_l2 = False
     k_l1 = False
     a_l2 = False
     a_l1 = False
     regularization = pack_regularization(
         dropout, k_l2, k_l1, a_l2, a_l1)
 
-    dl_model = Sequential()
-
-    dl_model.add(Dense(55, input_dim=n_features, activation='tanh',
-                       kernel_initializer='uniform',
-                       kernel_regularizer=regularizers.l2(0.00114660582694),
-                       activity_regularizer=None))
-
-    dl_model.add(Dense(9, input_dim=n_features, activation='tanh',
-                       kernel_initializer='uniform',
-                       kernel_regularizer=regularizers.l2(0.000193253640832),
-                       activity_regularizer=None))
-
-    return add_output_layer_and_compile(dl_model), n_layers, n_epoch, \
-        n_batch_size, regularization
-
-
-def dl_model_10(n_features):
-    """
-    Model 10 -- Fully connected layers
-        loss -- 'Mean Square Error'mse''
-        optimizer -- Adadelta
-        metrics -- ['accuracy']
-    Layers
-        Layer 0 -- Input Layer
-            #nodes: n_features
-        Layer 1 -- Dense
-            #nodes: 51,
-            activation: 'tanh',
-            kernel_initializer: 'uniform',
-            kernel_regularizer: l2 value 0.000447236290898
-        Layer 2 -- Dense, Output
-            #nodes: 1
-            activation: 'softplus'
-
-    Arguments:
-        n_features -- Number of features, int
-
-    Returns:
-        dl_model -- Deep Learning model of type keras.models.Sequential
-        n_layers -- Number of layers, int value 3
-        n_epoch -- Number og epochs, int value 644
-        n_batch_size -- Batch size, int value 120
-        regularization -- Dictionary of shape
-            {
-                'dropout': False,
-                'k_l2': False,
-                'k_l1': True,
-                'a_l2': False,
-                'a_l1': False,
-            }
-    """
-    print("DL model 10")
-    n_layers = 1
-    n_epoch = 2309
-    n_batch_size = 120
-
-    dropout = False
-    k_l2 = True
-    k_l1 = False
-    a_l2 = False
-    a_l1 = False
-    regularization = pack_regularization(
-        dropout, k_l2, k_l1, a_l2, a_l1)
+    loss = 'mean_squared_error'
+    optimizer = RMSprop()
 
     dl_model = Sequential()
 
-    dl_model.add(Dense(51, input_dim=n_features, activation='tanh',
-                       kernel_initializer='uniform',
-                       kernel_regularizer=regularizers.l2(0.000447236290898),
-                       activity_regularizer=None))
+    dl_model.add(Dense(8, input_dim=n_features, activation='sigmoid',
+                       kernel_initializer='glorot_normal'))
 
-    return add_output_layer_and_compile(dl_model), n_layers, n_epoch, \
-        n_batch_size, regularization
+    dl_model.add(Dense(4, activation='sigmoid'))
+
+    dl_model.add(Dense(1, activation='hard_sigmoid'))
+    dl_model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
+
+    return dl_model, n_features, n_layers, n_epoch, n_batch_size, \
+        regularization, loss, optimizer
