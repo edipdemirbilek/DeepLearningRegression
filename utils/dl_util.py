@@ -311,10 +311,10 @@ def log_model_hyperparameters(test_id, m_hyperparameters, regularization):
 
     log_string \
         = "\nTest Id: {}, Feature Type: {}, Num Features: {}, Num Layers: {}, \
-        Num Epochs: {}, Num Batch Size: {}, Dropout: {}, \
-        k_l2: {}, k_l1: {}, a_l2: {}, a_l1: {}"\
+        Num Epochs: {}, Num Batch Size: {}, Loss: {}, Optimizer: {}, \
+        Dropout: {}, k_l2: {}, k_l1: {}, a_l2: {}, a_l1: {}"\
         .format(test_id, f_type, n_features, n_layers, n_epoch, n_batch,
-                dropout, k_l2, k_l1, a_l2, a_l1)
+                loss, optimizer, dropout, k_l2, k_l1, a_l2, a_l1)
     print(log_string)
 
     with open(DL_RESULTS_DETAILS_FILE_NAME, "a") as file:
